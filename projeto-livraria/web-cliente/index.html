@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furo Literário | Livraria Online</title>
+    
+    <link rel="stylesheet" href="style-cliente.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+
+    <header>
+        <nav class="navbar">
+            <img src="logo-admin.png" alt="Furo Literário" class="logo">
+            
+            <div class="search-bar">
+                <input type="text" id="buscaLivro" placeholder="Pesquisar título ou autor...">
+            </div>
+            
+            <div class="cart-icon" onclick="abrirCarrinho()">
+                🛒 <span id="cart-count">0</span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        
+        <section class="filtros">
+            <button class="btn-filtro active" data-cat="todos">Todos</button>
+            <button class="btn-filtro" data-cat="Literatura Amazonense">Amazonenses</button>
+            <button class="btn-filtro" data-cat="Fantasia">Fantasia</button>
+        </section>
+
+        <section id="vitrine" class="grid-livros">
+            <p class="loading">Buscando as melhores histórias para você...</p>
+        </section>
+    </main>
+
+    <div id="modal-carrinho" class="modal">
+        <div class="modal-content">
+            <h3>Seu Carrinho</h3>
+            
+            <div id="itens-carrinho"></div>
+            
+            <div class="total-carrinho">
+                <span>Total:</span>
+                <span id="total-valor">R$ 0,00</span>
+            </div>
+            
+            <button id="btn-finalizar" class="btn-whatsapp" onclick="enviarPedido()">
+                <i class="fab fa-whatsapp"></i> Finalizar via WhatsApp
+            </button>
+            
+            <button onclick="fecharCarrinho()" class="btn-fechar">Continuar Comprando</button>
+        </div>
+    </div>
+
+    <script type="module" src="script-cliente.js"></script>
+</body>
+</html>

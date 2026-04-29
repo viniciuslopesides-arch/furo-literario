@@ -1,0 +1,214 @@
+/* ================================================================
+   1. BASE E TEMA (CONFIGURAÇÕES GERAIS)
+   ================================================================ */
+body {
+    background-color: #0d1117; /* Fundo padrão do GitHub/Dark Mode */
+    color: #e6edf3;           /* Texto levemente cinza para não cansar a vista */
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* ================================================================
+   2. NAVEGAÇÃO (NAVBAR FIXA COM EFEITO BLUR)
+   ================================================================ */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+    background: rgba(22, 27, 34, 0.8); /* Fundo semi-transparente */
+    backdrop-filter: blur(10px);        /* Efeito de vidro embaçado */
+    border-bottom: 1px solid #004d26;  /* Linha verde característica da marca */
+    position: sticky;                  /* Prende a barra no topo ao rolar */
+    top: 0;
+    z-index: 1000;                     /* Garante que fique acima de tudo */
+}
+
+.logo { 
+    width: 45px; 
+    border-radius: 8px; 
+}
+
+/* Barra de Pesquisa */
+.search-bar input {
+    background: #161b22;
+    border: 1px solid #30363d;
+    padding: 12px 20px;
+    border-radius: 25px;
+    color: white;
+    width: 300px;
+    transition: 0.3s;
+}
+
+/* Destaque ao clicar na pesquisa */
+.search-bar input:focus {
+    border-color: #004d26;
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 77, 38, 0.4);
+}
+
+/* ================================================================
+   3. VITRINE E LAYOUT DE PRODUTOS (GRID)
+   ================================================================ */
+.container { 
+    max-width: 1200px; 
+    margin: 2rem auto; 
+    padding: 0 20px; 
+}
+
+/* Grid Responsiva: ajusta o número de colunas conforme o tamanho da tela */
+.grid-livros {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 30px;
+}
+
+/* Card do Livro individual */
+.livro-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 15px;
+    /* Transição suave para o efeito de elevação */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: default;
+}
+
+/* Efeito de Elevação ao passar o mouse (UX: indica que é clicável) */
+.livro-card:hover {
+    transform: translateY(-10px);
+    border-color: #004d26;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Espaço para a capa do livro */
+.capa-placeholder {
+    background: #0d1117;
+    height: 280px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.preco { 
+    color: #2ecc71; 
+    font-weight: bold; 
+    font-size: 1.3rem; 
+    display: block; 
+    margin: 10px 0; 
+}
+
+/* Botão de compra primário */
+.btn-adicionar {
+    background: #004d26;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-adicionar:hover { 
+    background: #006633; 
+}
+
+/* ================================================================
+   4. MODAL DO CARRINHO (ESTRUTURA E VISUAL)
+   ================================================================ */
+/* Fundo escuro atrás do modal */
+.modal {
+    display: none; /* Escondido por padrão, JS ativa */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 2000;
+}
+
+/* Caixa central do modal */
+.modal-content {
+    background: #161b22;
+    max-width: 450px;
+    margin: 50px auto;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #004d26;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* Área de lista de itens com scroll interno */
+#itens-carrinho {
+    max-height: 350px; /* Evita que o modal cresça mais que a tela */
+    overflow-y: auto;  /* Habilita rolagem interna */
+    margin: 15px 0;
+    padding-right: 5px;
+}
+
+/* Estilização da barra de rolagem (Scrollbar) para não ficar feio no Chrome/Edge */
+#itens-carrinho::-webkit-scrollbar {
+    width: 6px;
+}
+#itens-carrinho::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 10px;
+}
+
+/* ================================================================
+   5. FINALIZAÇÃO E BOTÕES DE AÇÃO
+   ================================================================ */
+/* Seção do Total Geral */
+.total-carrinho {
+    border-top: 2px solid #30363d;
+    padding-top: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#total-valor {
+    color: #2ecc71; /* Valor em destaque verde */
+}
+
+/* Botão padrão WhatsApp (Identidade Visual do App) */
+.btn-whatsapp {
+    background-color: #25d366; 
+    color: white;
+    border: none;
+    padding: 15px;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-whatsapp:hover {
+    background-color: #128c7e;
+    transform: scale(1.02); /* Leve pulsação ao passar o mouse */
+}
+
+/* Botão secundário para fechar o modal */
+.btn-fechar {
+    background: transparent;
+    color: #8b949e;
+    border: none;
+    width: 100%;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
