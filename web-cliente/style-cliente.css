@@ -228,8 +228,8 @@ body {
         position: fixed !important;  /* Força sair da navbar */
         bottom: 30px !important;     /* Altura do chão */
         right: 20px !important;      /* Canto direito */
-        width: 50px !important;      /* Tamanho ideal para o polegar */
-        height: 50px !important;
+        width: 70px !important;      /* Tamanho ideal para o polegar */
+        height: 70px !important;
         background-color: #004d26 !important; /* Verde Furo Literário */
         color: white !important;
         border-radius: 50% !important; /* Redondinho */
