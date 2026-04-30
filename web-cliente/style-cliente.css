@@ -10,13 +10,14 @@ body {
 }
 
 /* ================================================================
-   2. NAVEGAÇÃO (NAVBAR FIXA COM EFEITO BLUR)
+   2. NAVEGAÇÃO (NAVBAR E PESQUISA - VERSÃO FINAL UNIFICADA)
    ================================================================ */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 5%;
+    gap: 15px; 
     background: rgba(22, 27, 34, 0.8);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid #004d26;
@@ -28,14 +29,13 @@ body {
 .logo { 
     width: 45px; 
     border-radius: 8px; 
-    flex-shrink: 0; /* Impede a logo de amassar no mobile */
+    flex-shrink: 0; 
 }
 
-/* Barra de Pesquisa (Desktop) */
 .search-bar {
-    flex-grow: 1;
+    flex: 1; 
     display: flex;
-    justify-content: center; /* Centraliza a barra no desktop */
+    justify-content: center;
     margin: 0 15px;
 }
 
@@ -46,9 +46,9 @@ body {
     border-radius: 25px;
     color: white;
     width: 100%;
-    max-width: 400px; /* Aumentei um pouco o limite no PC */
+    max-width: 450px; 
     transition: 0.3s;
-    font-size: 16px; /* Evita o zoom automático no iPhone ao clicar */
+    font-size: 16px; 
 }
 
 .search-bar input:focus {
@@ -58,30 +58,52 @@ body {
     background: #1c2128;
 }
 
+/* Carrinho na Navbar (Desktop) */
+.cart-icon {
+    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1010;
+}
+
 /* ================================================================
-   AJUSTE DA PESQUISA PARA CELULAR
+   RESPONSIVIDADE (MOBILE)
    ================================================================ */
 @media (max-width: 768px) {
     .navbar {
-        flex-wrap: wrap; /* Permite que os itens pulem de linha se necessário */
+        flex-wrap: wrap; /* Permite que a barra de busca pule de linha */
         padding: 0.8rem 4%;
     }
 
     .search-bar {
-        order: 3; /* Joga a pesquisa para baixo da logo e do carrinho no mobile */
+        order: 3; /* Barra de busca vai para baixo da logo */
         width: 100%;
         margin: 10px 0 5px 0;
     }
 
     .search-bar input {
-        max-width: 100%; /* Ocupa a largura total no celular */
-        padding: 8px 15px;
+        max-width: 100%;
+        padding: 12px 15px; /* Aumenta um pouco para o toque */
     }
 
-    /* Ocultamos o ícone do carrinho original da navbar no mobile 
-       já que agora ele é um botão flutuante no canto da tela */
-    .navbar .cart-icon {
-        display: none !important;
+    /* CARRINHO MOBILE: Transforma em Botão Flutuante */
+    .cart-icon { 
+        position: fixed !important; 
+        bottom: 30px !important;
+        right: 20px !important;
+        width: 65px !important;
+        height: 65px !important;
+        background-color: #004d26 !important;
+        border-radius: 50% !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.6) !important;
+        display: flex !important; /* GARANTE QUE APAREÇA */
+        justify-content: center;
+        align-items: center;
+        font-size: 1.7rem !important;
+        border: 2px solid #2ecc71 !important;
     }
 }
 
