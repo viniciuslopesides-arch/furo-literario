@@ -220,69 +220,89 @@ body {
 }
 
 /* ================================================================
-   AJUSTES PARA DISPOSITIVOS MÓVEIS (RESPONSIVIDADE)
+   AJUSTES PARA DISPOSITIVOS MÓVEIS (RESPONSIVIDADE UNIFICADA)
    ================================================================ */
 @media (max-width: 768px) {
-    /* 1. Transformando o ícone do carrinho em Botão Flutuante */
+    
+    /* 1. Botão Flutuante do Carrinho */
     .cart-icon { 
-        position: fixed !important;  /* Força sair da navbar */
-        bottom: 30px !important;     /* Altura do chão */
-        right: 20px !important;      /* Canto direito */
-        width: 70px !important;      /* Tamanho ideal para o polegar */
-        height: 70px !important;
-        background-color: #004d26 !important; /* Verde Furo Literário */
-        color: white !important;
-        border-radius: 50% !important; /* Redondinho */
         display: flex !important;
+        position: fixed !important;
+        bottom: 30px !important;
+        right: 20px !important;
+        width: 65px !important;
+        height: 65px !important;
+        background-color: #004d26 !important;
+        color: white !important;
+        border-radius: 50% !important;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem !important; /* Aumenta o emoji do carrinho */
-        box-shadow: 0 6px 20px rgba(0,0,0,0.5) !important;
-        z-index: 1500 !important;    /* Fica em cima de tudo */
-        border: 2px solid #ffffff33 !important;
+        font-size: 1.6rem !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.6) !important;
+        z-index: 9999 !important; /* Força ficar na frente de tudo */
+        border: 2px solid #2ecc71 !important; /* Destaque visual */
         cursor: pointer;
     }
 
-    /* 2. Ajuste do Contador (Número vermelho) */
+    /* 2. Contador de Itens (Badge) */
     #cart-count {
         position: absolute;
-        top: 5px;
-        right: 5px;
+        top: 2px;
+        right: 2px;
         background: #e74c3c;
         color: white;
         border-radius: 50%;
-        min-width: 22px;
-        height: 22px;
+        min-width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.75rem;
         font-weight: bold;
         border: 2px solid #004d26;
     }
 
-    /* 3. Ajuste do Modal para não sumir no topo */
+    /* 3. Estrutura do Modal no Celular */
     .modal-content {
         width: 92%;
         margin: 0 auto;
+        position: relative;
         top: 50%;
         transform: translateY(-50%);
         padding: 20px;
         max-height: 85vh;
         display: flex;
         flex-direction: column;
+        background: #161b22;
+        border: 1px solid #004d26;
+        border-radius: 15px;
     }
 
     #itens-carrinho {
         max-height: 45vh;
         overflow-y: auto;
+        margin: 15px 0;
     }
 
-    /* Botões de ação no mobile */
+    /* 4. Botões de Ação Mobile */
     .btn-whatsapp, .btn-fechar {
         width: 100% !important;
         padding: 16px;
         font-size: 1.1rem;
+        margin-top: 10px;
+        display: block;
+        border-radius: 8px;
+    }
+
+    /* 5. Ajuste da Navbar para Pesquisa */
+    .navbar {
+        flex-wrap: wrap;
+        padding: 0.8rem 4%;
+    }
+
+    .search-bar {
+        order: 3;
+        width: 100%;
         margin-top: 10px;
     }
 }
