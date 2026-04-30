@@ -15,13 +15,13 @@ body {
 }
 
 /* ================================================================
-   2. NAVEGAÇÃO (NAVBAR E PESQUISA - ALINHAMENTO EM LINHA)
+   2. NAVEGAÇÃO (NAVBAR E PESQUISA - VERSÃO FINAL UNIFICADA)
    ================================================================ */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.8rem 15px; /* Reduzi levemente o padding lateral */
+    padding: 0.8rem 15px;
     gap: 12px; 
     background: rgba(22, 27, 34, 0.90); 
     backdrop-filter: blur(12px);
@@ -39,7 +39,7 @@ body {
 }
 
 .search-bar {
-    flex: 1; /* Ocupa todo o espaço restante entre logo e carrinho */
+    flex: 1;
     display: flex;
     justify-content: center;
 }
@@ -47,13 +47,13 @@ body {
 .search-bar input {
     background: #161b22;
     border: 1px solid #30363d;
-    padding: 8px 15px; /* Mais compacto para caber em linha */
+    padding: 8px 15px;
     border-radius: 20px;
     color: white;
     width: 100%;
     max-width: 500px; 
     transition: 0.3s;
-    font-size: 16px; /* Evita zoom forçado no iOS */
+    font-size: 16px;
 }
 
 .search-bar input:focus {
@@ -66,14 +66,13 @@ body {
     flex-shrink: 0;
     cursor: pointer;
     font-size: 1.4rem;
-    color: #2ecc71; /* Destaque verde para o carrinho */
+    color: #2ecc71;
     display: flex;
     align-items: center;
     position: relative;
     padding: 5px;
 }
 
-/* Bolinha do contador de itens */
 #cart-count {
     position: absolute;
     top: -2px;
@@ -92,25 +91,29 @@ body {
 }
 
 /* ================================================================
-   RESPONSIVIDADE (MOBILE SEM BOTÃO FLUTUANTE)
+   RESPONSIVIDADE (MOBILE - TUDO EM UMA LINHA)
    ================================================================ */
 @media (max-width: 768px) {
     .navbar {
-        flex-wrap: nowrap; /* TUDO em uma linha só */
-        padding: 10px 10px;
-        gap: 8px;
+        flex-wrap: nowrap !important; /* Proíbe a quebra de linha */
+        padding: 10px 10px !important;
+        gap: 8px !important;
     }
 
     .logo {
-        width: 35px; /* Logo menor para sobrar espaço */
+        width: 35px !important;
+    }
+
+    .search-bar {
+        margin: 0 !important; /* Remove margens que empurram os itens */
     }
 
     .search-bar input {
-        padding: 8px 12px;
-        font-size: 14px; /* Fonte levemente menor para caber melhor */
+        padding: 8px 12px !important;
+        font-size: 14px !important;
     }
 
-    /* Carrinho integrado à barra, não mais flutuante */
+    /* Carrinho agora é um ícone comum na barra, sem ser flutuante */
     .cart-icon { 
         position: relative !important; 
         bottom: auto !important;
@@ -124,49 +127,11 @@ body {
     }
 
     #cart-count {
-        width: 16px;
-        height: 16px;
-        font-size: 0.6rem;
-        top: -3px;
-        right: -3px;
-    }
-}
-
-/* ================================================================
-   RESPONSIVIDADE (MOBILE)
-   ================================================================ */
-@media (max-width: 768px) {
-    .navbar {
-        flex-wrap: wrap; 
-        padding: 0.8rem 4%;
-    }
-
-    .search-bar {
-        order: 3; 
-        width: 100%;
-        margin: 10px 0 5px 0;
-    }
-
-    .search-bar input {
-        max-width: 100%;
-        padding: 12px 15px; 
-    }
-
-    /* CARRINHO MOBILE: Botão Flutuante */
-    .cart-icon { 
-        position: fixed !important; 
-        bottom: 30px !important;
-        right: 20px !important;
-        width: 65px !important;
-        height: 65px !important;
-        background-color: #004d26 !important;
-        border-radius: 50% !important;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.6) !important;
-        display: flex !important; 
-        justify-content: center;
-        align-items: center;
-        font-size: 1.7rem !important;
-        border: 2px solid #2ecc71 !important;
+        width: 16px !important;
+        height: 16px !important;
+        font-size: 0.6rem !important;
+        top: -3px !important;
+        right: -3px !important;
     }
 }
 
