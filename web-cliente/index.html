@@ -13,14 +13,17 @@
 
     <header>
         <nav class="navbar">
-            <img src="logo-admin.png" alt="Furo Literário" class="logo">
+            <a href="index.html" style="display: flex;">
+                <img src="logo-admin.png" alt="Furo Literário" class="logo">
+            </a>
             
             <div class="search-bar">
                 <input type="text" id="buscaLivro" placeholder="Pesquisar título ou autor...">
             </div>
             
             <div class="cart-icon" onclick="abrirCarrinho()">
-                🛒 <span id="cart-count">0</span>
+                <i class="fas fa-shopping-basket"></i>
+                <span id="cart-count">0</span>
             </div>
         </nav>
     </header>
@@ -28,19 +31,20 @@
     <main class="container">
         
         <section class="filtros">
-            <button class="btn-filtro active" data-cat="todos">Todos</button>
-            <button class="btn-filtro" data-cat="Literatura Amazonense">Amazonenses</button>
-            <button class="btn-filtro" data-cat="Fantasia">Fantasia</button>
+            <button class="btn-filtro active" data-categoria="todos">Todos</button>
+            <button class="btn-filtro" data-categoria="Literatura Amazonense">Amazonenses</button>
+            <button class="btn-filtro" data-categoria="Fantasia">Fantasia</button>
+            <button class="btn-filtro" data-categoria="Nacionais">Nacionais</button>
         </section>
 
         <section id="vitrine" class="grid-livros">
-            <p class="loading">Buscando as melhores histórias para você...</p>
+            <p class="carrinho-vazio">Buscando as melhores histórias para você...</p>
         </section>
     </main>
 
     <div id="modal-carrinho" class="modal">
         <div class="modal-content">
-            <h3>Seu Carrinho</h3>
+            <h2>Seu Carrinho</h2>
             
             <div id="itens-carrinho"></div>
             
