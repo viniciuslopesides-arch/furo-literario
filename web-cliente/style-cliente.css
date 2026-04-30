@@ -15,15 +15,15 @@ body {
 }
 
 /* ================================================================
-   2. NAVEGAÇÃO (NAVBAR E PESQUISA - VERSÃO FINAL UNIFICADA)
+   2. NAVEGAÇÃO (NAVBAR E PESQUISA - ALINHAMENTO EM LINHA)
    ================================================================ */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 5%;
-    gap: 15px; 
-    background: rgba(22, 27, 34, 0.85); /* Aumentei levemente a opacidade para leitura */
+    padding: 0.8rem 15px; /* Reduzi levemente o padding lateral */
+    gap: 12px; 
+    background: rgba(22, 27, 34, 0.90); 
     backdrop-filter: blur(12px);
     border-bottom: 1px solid #004d26;
     position: sticky;
@@ -32,46 +32,104 @@ body {
 }
 
 .logo { 
-    width: 45px; 
+    width: 42px; 
     height: auto;
     border-radius: 8px; 
     flex-shrink: 0; 
 }
 
 .search-bar {
-    flex: 1; 
+    flex: 1; /* Ocupa todo o espaço restante entre logo e carrinho */
     display: flex;
     justify-content: center;
-    margin: 0 15px;
 }
 
 .search-bar input {
     background: #161b22;
     border: 1px solid #30363d;
-    padding: 10px 20px;
-    border-radius: 25px;
+    padding: 8px 15px; /* Mais compacto para caber em linha */
+    border-radius: 20px;
     color: white;
     width: 100%;
-    max-width: 450px; 
+    max-width: 500px; 
     transition: 0.3s;
-    font-size: 16px; /* Mantido em 16px para evitar zoom forçado no iOS */
+    font-size: 16px; /* Evita zoom forçado no iOS */
 }
 
 .search-bar input:focus {
-    border-color: #004d26;
+    border-color: #2ecc71;
     outline: none;
-    box-shadow: 0 0 8px rgba(0, 77, 38, 0.4);
-    background: #1c2128;
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
 }
 
 .cart-icon {
     flex-shrink: 0;
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    color: #2ecc71; /* Destaque verde para o carrinho */
     display: flex;
     align-items: center;
     position: relative;
-    z-index: 1010;
+    padding: 5px;
+}
+
+/* Bolinha do contador de itens */
+#cart-count {
+    position: absolute;
+    top: -2px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #0d1117;
+}
+
+/* ================================================================
+   RESPONSIVIDADE (MOBILE SEM BOTÃO FLUTUANTE)
+   ================================================================ */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: nowrap; /* TUDO em uma linha só */
+        padding: 10px 10px;
+        gap: 8px;
+    }
+
+    .logo {
+        width: 35px; /* Logo menor para sobrar espaço */
+    }
+
+    .search-bar input {
+        padding: 8px 12px;
+        font-size: 14px; /* Fonte levemente menor para caber melhor */
+    }
+
+    /* Carrinho integrado à barra, não mais flutuante */
+    .cart-icon { 
+        position: relative !important; 
+        bottom: auto !important;
+        right: auto !important;
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        font-size: 1.3rem !important;
+    }
+
+    #cart-count {
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+        top: -3px;
+        right: -3px;
+    }
 }
 
 /* ================================================================
