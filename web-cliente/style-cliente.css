@@ -17,39 +17,76 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 5%;
-    background: rgba(22, 27, 34, 0.8); /* Fundo semi-transparente */
-    backdrop-filter: blur(10px);        /* Efeito de vidro embaçado */
-    border-bottom: 1px solid #004d26;  /* Linha verde característica da marca */
-    position: sticky;                  /* Prende a barra no topo ao rolar */
+    background: rgba(22, 27, 34, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #004d26;
+    position: sticky;
     top: 0;
-    z-index: 1000;                     /* Garante que fique acima de tudo */
+    z-index: 1000;
 }
 
 .logo { 
     width: 45px; 
     border-radius: 8px; 
+    flex-shrink: 0; /* Impede a logo de amassar no mobile */
 }
 
-/* Barra de Pesquisa */
+/* Barra de Pesquisa (Desktop) */
+.search-bar {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center; /* Centraliza a barra no desktop */
+    margin: 0 15px;
+}
+
 .search-bar input {
     background: #161b22;
     border: 1px solid #30363d;
-    padding: 12px 20px;
+    padding: 10px 20px;
     border-radius: 25px;
     color: white;
-    width: 300px;
+    width: 100%;
+    max-width: 400px; /* Aumentei um pouco o limite no PC */
     transition: 0.3s;
+    font-size: 16px; /* Evita o zoom automático no iPhone ao clicar */
 }
 
-/* Destaque ao clicar na pesquisa */
 .search-bar input:focus {
     border-color: #004d26;
     outline: none;
     box-shadow: 0 0 8px rgba(0, 77, 38, 0.4);
+    background: #1c2128;
 }
 
 /* ================================================================
-   3. VITRINE E LAYOUT DE PRODUTOS (GRID)
+   AJUSTE DA PESQUISA PARA CELULAR
+   ================================================================ */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap; /* Permite que os itens pulem de linha se necessário */
+        padding: 0.8rem 4%;
+    }
+
+    .search-bar {
+        order: 3; /* Joga a pesquisa para baixo da logo e do carrinho no mobile */
+        width: 100%;
+        margin: 10px 0 5px 0;
+    }
+
+    .search-bar input {
+        max-width: 100%; /* Ocupa a largura total no celular */
+        padding: 8px 15px;
+    }
+
+    /* Ocultamos o ícone do carrinho original da navbar no mobile 
+       já que agora ele é um botão flutuante no canto da tela */
+    .navbar .cart-icon {
+        display: none !important;
+    }
+}
+
+/* ================================================================
+   3. VITRINE E LAYOUT DE PRODUTOS (GRID E CARDS)
    ================================================================ */
 .container { 
     max-width: 1200px; 
@@ -73,25 +110,41 @@ body {
     /* Transição suave para o efeito de elevação */
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: default;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Efeito de Elevação ao passar o mouse (UX: indica que é clicável) */
+/* Efeito de Elevação ao passar o mouse */
 .livro-card:hover {
     transform: translateY(-10px);
     border-color: #004d26;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* Espaço para a capa do livro */
-.capa-placeholder {
-    background: #0d1117;
-    height: 280px;
-    border-radius: 8px;
+/* Container da Capa (Substitui o antigo placeholder) */
+.capa-container {
+    width: 100%;
+    height: 280px;     /* Altura ajustada para destacar bem a arte do livro */
+    overflow: hidden;  
+    border-radius: 10px;
+    background: #0d1117; 
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
-    margin-bottom: 15px;
+}
+
+/* A imagem da capa em si */
+.capa-livro {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ajusta a imagem sem distorcer, cortando sobras se necessário */
+    transition: transform 0.3s ease; 
+}
+
+/* Efeito de zoom na capa quando passa o mouse no card */
+.livro-card:hover .capa-livro {
+    transform: scale(1.08); 
 }
 
 .preco { 
@@ -113,6 +166,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
+    margin-top: auto; /* Empurra o botão sempre para o final do card */
 }
 
 .btn-adicionar:hover { 
@@ -174,8 +228,8 @@ body {
         position: fixed !important;  /* Força sair da navbar */
         bottom: 30px !important;     /* Altura do chão */
         right: 20px !important;      /* Canto direito */
-        width: 70px !important;      /* Tamanho ideal para o polegar */
-        height: 70px !important;
+        width: 50px !important;      /* Tamanho ideal para o polegar */
+        height: 50px !important;
         background-color: #004d26 !important; /* Verde Furo Literário */
         color: white !important;
         border-radius: 50% !important; /* Redondinho */

@@ -25,31 +25,43 @@ onSnapshot(collection(db, "livros"), (snapshot) => {
 });
 
 /* ================================================================
-   3. LÓGICA DA VITRINE E FILTRO DE BUSCA
+   3. LÓGICA DA VITRINE E FILTRO DE BUSCA (ATUALIZADA)
    ================================================================ */
 
-// Função que desenha os cards na tela
 function renderizarVitrine(lista) {
+    const vitrine = document.getElementById('vitrine'); // Garante a referência
     vitrine.innerHTML = "";
+
+    if (lista.length === 0) {
+        vitrine.innerHTML = `<p class="aviso">Nenhum livro encontrado com esse nome.</p>`;
+        return;
+    }
+
     lista.forEach(livro => {
-        // Regra de Ouro: Só mostra pro cliente se houver estoque disponível
         if (livro.estoque > 0) {
+            // Se o livro tiver capa cadastrada, usa ela. Se não, usa um placeholder cinza.
+            const urlCapa = livro.capa ? livro.capa : 'https://via.placeholder.com/150x220/161b22/8b949e?text=Sem+Capa';
+
             vitrine.innerHTML += `
                 <div class="livro-card">
-                    <div class="capa-placeholder">📖</div>
-                    <h3>${livro.titulo}</h3>
-                    <p>${livro.autor} | ${livro.categoria || 'Geral'}</p>
-                    <span class="preco">R$ ${livro.preco.toFixed(2)}</span>
-                    <button class="btn-adicionar" onclick="adicionarAoCarrinho('${livro.id}', '${livro.titulo}', ${livro.preco})">
-                        Adicionar
-                    </button>
+                    <div class="capa-container">
+                        <img src="${urlCapa}" alt="${livro.titulo}" class="capa-livro">
+                    </div>
+                    <div class="livro-info">
+                        <h3>${livro.titulo}</h3>
+                        <p class="autor-cat">${livro.autor} | ${livro.categoria || 'Geral'}</p>
+                        <span class="preco">R$ ${livro.preco.toFixed(2).replace('.', ',')}</span>
+                        <button class="btn-adicionar" onclick="adicionarAoCarrinho('${livro.id}', '${livro.titulo}', ${livro.preco})">
+                            <i class="fas fa-plus"></i> Adicionar
+                        </button>
+                    </div>
                 </div>
             `;
         }
     });
 }
 
-// Filtro de Busca: Dispara a cada tecla digitada pelo cliente
+// Filtro de Busca (Permanece igual, pois já está ótimo!)
 document.getElementById('buscaLivro').addEventListener('input', (e) => {
     const termo = e.target.value.toLowerCase();
     const filtrados = todosOsLivros.filter(l => 
