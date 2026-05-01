@@ -49,7 +49,7 @@
             </div>
         </section>
 
-        <!-- SEÇÃO 4: CONFIGURAÇÕES (Frete e Logística) -->
+        <!-- SEÇÃO 4: CONFIGURAÇÕES (Logística) -->
         <section class="secao">
             <h2>🚚 Logística e Entrega</h2>
             <div class="input-inline">
@@ -58,10 +58,24 @@
             </div>
         </section>
 
-        <!-- SEÇÃO 5: CADASTRO (Entrada de Dados e Upload) -->
+        <!-- SEÇÃO 5: PERFIL E CADASTRO (Entrada de Dados) -->
+        <section class="secao">
+            <h2>⚙️ Perfil da Loja</h2>
+            <div class="form-group">
+                <label>Nome da Vitrine:</label>
+                <input type="text" id="config-nome" placeholder="Ex: Livraria do Vitinho">
+                
+                <label>WhatsApp (com DDD):</label>
+                <input type="text" id="config-whatsapp" placeholder="Ex: 5592984... ">
+                
+                <button class="btn-primary" onclick="salvarPerfil()">Salvar Configurações</button>
+            </div>
+        </section>
+    
         <section class="secao">
             <h2 id="tituloForm">📝 Gerenciar Catálogo</h2>
             <div class="form-group">
+                <!-- Informações Básicas -->
                 <input type="text" id="tituloLivro" placeholder="Título do livro">
                 <input type="text" id="autorLivro" placeholder="Autor">
                 
@@ -74,25 +88,23 @@
                     <option value="Outros">Outros</option>
                 </select>
 
-                <!-- Bloco de Upload: Aciona o input oculto -->
-                <div class="upload-container" onclick="document.getElementById('capaLivro').click()">
-                    <label class="label-upload">🖼️ Selecionar Capa do Livro</label>
-                    <input type="file" id="capaLivro" accept="image/*" style="display: none;">
-                    <progress id="uploadProgress" value="0" max="100"></progress>
-                    <small id="nomeArquivo"></small>
-                </div>
-
+                <!-- URL da Capa (Ajustado para evitar conflitos de ID) -->
+                <label>Link da Imagem (Capa):</label>
+                <input type="text" id="capaURL" placeholder="Cole aqui a URL da imagem (ex: https://...)">
+                
+                <!-- Dados Financeiros -->
                 <div class="input-row">
                     <input type="number" id="custoLivro" placeholder="Custo (R$)">
                     <input type="number" id="precoLivro" placeholder="Preço Venda (R$)">
                 </div>
                 
+                <!-- Controle de Inventário -->
                 <input type="number" id="estoqueLivro" placeholder="Quantidade em estoque">
                 <button id="btnSalvarLivro" class="btn-primary">Salvar no Acervo</button>
             </div>
         </section>
 
-        <!-- SEÇÃO 6: LISTAGENS (Visualização do Banco de Dados) -->
+        <!-- SEÇÃO 6: LISTAGENS (Visualização em Tempo Real) -->
         <section class="secao">
             <h2>🗂️ Gestão de Inventário</h2>
             <div id="listaLivros" class="data-grid">
@@ -101,6 +113,7 @@
         </section>
     </main>
 
+    <!-- Script principal com type module para suportar importações do Firebase -->
     <script type="module" src="script.js"></script>
 </body>
 </html>

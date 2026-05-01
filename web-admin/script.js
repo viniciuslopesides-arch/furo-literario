@@ -3,43 +3,39 @@
 // ================================================================
 import { db } from '../firebase-config.js';
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, where, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const auth = getAuth();
-const storage = getStorage();
-let USUARIO_ID = ""; // "Capitão" do acesso: define quem vê o quê.
+let USUARIO_ID = ""; 
 
 // ================================================================
-// 2. SEGURANÇA E AUTH (O Filtro do Sistema)
+// 2. SEGURANÇA E AUTH
 // ================================================================
 onAuthStateChanged(auth, (user) => {
     if (!user) {
-        window.location.href = "login.html"; // Redireciona se não houver login
+        window.location.href = "login.html"; 
     } else {
         USUARIO_ID = user.uid; 
-        document.getElementById('user-greeting').innerText = `Olá, ${user.email.split('@')[0]}`;
-        inicializarPainel(); // Ativa os observadores de dados
+        const greeting = document.getElementById('user-greeting');
+        if (greeting) greeting.innerText = `Olá, ${user.email.split('@')[0]}`;
+        inicializarPainel(); 
     }
 });
 
-// Ação de Saída
+// Evento de Logout
 document.getElementById('btnLogout')?.addEventListener('click', () => signOut(auth));
 
-// Exibe o nome do arquivo selecionado antes do upload
-document.getElementById('capaLivro').addEventListener('change', (e) => {
-    document.getElementById('nomeArquivo').innerText = e.target.files[0]?.name || "";
-});
-
 // ================================================================
-// 3. CORE: SINCRONIZAÇÃO EM TEMPO REAL (Snapshot)
+// 3. CORE: SINCRONIZAÇÃO EM TEMPO REAL
 // ================================================================
 function inicializarPainel() {
-    // Filtra livros pelo ID do admin logado (Multi-tenancy)
+    // Filtra livros apenas do usuário logado (Regra de Negócio SaaS)
     const qLivros = query(collection(db, "livros"), where("ownerID", "==", USUARIO_ID));
     
     onSnapshot(qLivros, (snapshot) => {
         const listaDiv = document.getElementById('listaLivros');
+        if (!listaDiv) return;
+        
         listaDiv.innerHTML = ""; 
         let totalEstoque = 0, lucroTotal = 0;
         const dadosGrafico = [];
@@ -52,45 +48,72 @@ function inicializarPainel() {
             totalEstoque += estoque;
             lucroTotal += (margem * estoque);
             
-            dadosGrafico.push({ titulo: livro.titulo, estoque, margemAcumulada: margem * estoque });
+            dadosGrafico.push({ 
+                titulo: livro.titulo || "Sem título", 
+                estoque, 
+                margemAcumulada: margem * estoque 
+            });
+
+            // Renderiza o card visual do livro
             renderizarCardLivro(docSnap.id, livro, estoque, margem);
         });
 
-        // Atualiza UI global
-        document.getElementById('total-estoque').innerText = totalEstoque;
-        document.getElementById('lucro-total').innerText = `R$ ${lucroTotal.toFixed(2)}`;
+        // Atualiza os indicadores de topo (KPIs)
+        const elEstoque = document.getElementById('total-estoque');
+        const elLucro = document.getElementById('lucro-total');
+        if (elEstoque) elEstoque.innerText = totalEstoque;
+        if (elLucro) elLucro.innerText = `R$ ${lucroTotal.toFixed(2)}`;
+        
+        // Sincroniza os gráficos com os novos dados
         atualizarGraficos(dadosGrafico);
     });
 }
 
 // ================================================================
-// 4. OPERAÇÕES DE DADOS (Create / Update / Upload)
+// 4. CONFIGURAÇÕES: PERFIL DA LOJA
+// ================================================================
+async function salvarPerfil() {
+    const user = auth.currentUser; 
+    if (!user) return alert("Você precisa estar logado!");
+
+    const nomeLoja = document.getElementById('config-nome').value.trim();
+    const whats = document.getElementById('config-whatsapp').value.trim();
+
+    try {
+        await setDoc(doc(db, "configuracoes", user.uid), {
+            nome_loja: nomeLoja,
+            whatsapp: whats,
+            ownerID: user.uid
+        }, { merge: true });
+
+        alert("Perfil atualizado!");
+    } catch (error) {
+        console.error("Erro ao salvar perfil:", error);
+    }
+}
+window.salvarPerfil = salvarPerfil;
+
+// ================================================================
+// 5. OPERAÇÕES DE DADOS (Salvar / Editar / Deletar)
 // ================================================================
 const btnSalvar = document.getElementById('btnSalvarLivro');
 
-btnSalvar.addEventListener('click', async () => {
+btnSalvar?.addEventListener('click', async () => {
     const idEdicao = btnSalvar.dataset.idEdicao;
-    const file = document.getElementById('capaLivro').files[0];
     
-    // UI Feedback: Evita cliques duplos durante o processamento
+    // Bloqueia o botão para evitar duplicidade no Firebase
     btnSalvar.disabled = true;
     btnSalvar.innerText = "Processando...";
 
     try {
-        // Lógica de Imagem: Mantém a URL antiga se não subir uma nova
-        let urlCapa = btnSalvar.dataset.urlAtual || ""; 
-        if (file) {
-            urlCapa = await subirCapa(file);
-        }
-
         const dados = {
             titulo: document.getElementById('tituloLivro').value.trim(),
             autor: document.getElementById('autorLivro').value.trim(),
             categoria: document.getElementById('categoriaLivro').value,
-            preco: Number(document.getElementById('precoLivro').value),
-            custo: Number(document.getElementById('custoLivro').value),
-            estoque: Number(document.getElementById('estoqueLivro').value),
-            capaURL: urlCapa,
+            preco: Number(document.getElementById('precoLivro').value) || 0,
+            custo: Number(document.getElementById('custoLivro').value) || 0,
+            estoque: Number(document.getElementById('estoqueLivro').value) || 0,
+            capaURL: document.getElementById('capaURL').value.trim(), 
             ownerID: USUARIO_ID,
             ultimoUpdate: new Date()
         };
@@ -104,37 +127,15 @@ btnSalvar.addEventListener('click', async () => {
         limparFormulario();
     } catch (error) {
         console.error("Erro na operação:", error);
+        alert("Erro ao salvar. Verifique o console.");
     } finally {
         btnSalvar.disabled = false;
         btnSalvar.innerText = "Salvar no Acervo";
         delete btnSalvar.dataset.idEdicao;
-        delete btnSalvar.dataset.urlAtual;
     }
 });
 
-// "Lego" de Upload: Envia para o Firebase Storage
-async function subirCapa(arquivo) {
-    const storageRef = ref(storage, `capas/${USUARIO_ID}/${Date.now()}_${arquivo.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, arquivo);
-    const progressBar = document.getElementById('uploadProgress');
-    
-    progressBar.style.display = 'block';
-
-    return new Promise((resolve, reject) => {
-        uploadTask.on('state_changed', 
-            (s) => progressBar.value = (s.bytesTransferred / s.totalBytes) * 100,
-            (e) => reject(e),
-            () => getDownloadURL(uploadTask.snapshot.ref).then(url => {
-                progressBar.style.display = 'none';
-                resolve(url);
-            })
-        );
-    });
-}
-
-// ================================================================
-// 5. AUXILIARES E UI (Renderização e Limpeza)
-// ================================================================
+// Prepara o formulário para edição (Preenchimento Automático)
 window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
     document.getElementById('tituloLivro').value = t;
     document.getElementById('autorLivro').value = a;
@@ -142,69 +143,94 @@ window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
     document.getElementById('estoqueLivro').value = e;
     document.getElementById('custoLivro').value = c;
     document.getElementById('categoriaLivro').value = cat;
+    document.getElementById('capaURL').value = url; 
     
     btnSalvar.dataset.idEdicao = id;
-    btnSalvar.dataset.urlAtual = url; 
     btnSalvar.innerText = "Atualizar Livro";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+// ================================================================
+// 6. AUXILIARES E UI (Renderização dos Cards)
+// ================================================================
 function renderizarCardLivro(id, livro, estoque, margem) {
+    // Lógica de cores para o estoque (Usa o CSS definido no seu style.css)
     const statusClass = estoque <= 0 ? "status-zerado" : (estoque <= 5 ? "status-baixo" : "status-ok");
-    const imgHtml = livro.capaURL ? `<img src="${livro.capaURL}" class="capa-mini">` : `<div class="capa-placeholder">Sem Capa</div>`;
     
-    document.getElementById('listaLivros').innerHTML += `
+    // Tratamento para URL de imagem (Fallback para placeholder se falhar)
+    const urlImagem = livro.capaURL || 'https://via.placeholder.com/150?text=Sem+Capa';
+    
+    const card = `
         <div class="livro-card ${statusClass}">
-            ${imgHtml}
+            <img src="${urlImagem}" class="capa-mini" onerror="this.src='https://via.placeholder.com/150?text=Erro+Capa';">
             <div class="livro-info">
                 <strong>${livro.titulo}</strong>
                 <p><small>Estoque: ${estoque} | Lucro: R$ ${margem.toFixed(2)}</small></p>
             </div>
             <div class="acoes-card">
-                <button class="btn-edit" onclick="prepararEdicao('${id}', '${livro.titulo}', '${livro.autor}', ${livro.preco}, ${estoque}, ${livro.custo}, '${livro.categoria}', '${livro.capaURL || ''}')">Editar</button>
+                <button class="btn-edit" id="edit-${id}">Editar</button>
                 <button class="btn-del" onclick="window.deletarLivro('${id}')">Excluir</button>
             </div>
         </div>
     `;
+    
+    const listaDiv = document.getElementById('listaLivros');
+    listaDiv.insertAdjacentHTML('beforeend', card);
+
+    // Evento de edição via ID para evitar erros de strings com aspas/espaços
+    document.getElementById(`edit-${id}`).addEventListener('click', () => {
+        window.prepararEdicao(id, livro.titulo, livro.autor, livro.preco, estoque, livro.custo, livro.categoria, livro.capaURL || '');
+    });
 }
 
-// Excluir documento
+// Exclusão de documento
 window.deletarLivro = async (id) => { 
-    if(confirm("Confirmar exclusão?")) await deleteDoc(doc(db, "livros", id));
+    if(confirm("Deseja realmente excluir este livro do acervo?")) {
+        try {
+            await deleteDoc(doc(db, "livros", id));
+        } catch (e) {
+            console.error("Erro ao deletar:", e);
+        }
+    }
 };
 
 function limparFormulario() {
     document.querySelectorAll('.form-group input, .form-group select').forEach(i => i.value = "");
-    document.getElementById('nomeArquivo').innerText = "";
-    document.getElementById('capaLivro').value = "";
+    const btn = document.getElementById('btnSalvarLivro');
+    if (btn) {
+        btn.innerText = "Salvar no Acervo";
+        delete btn.dataset.idEdicao;
+    }
 }
 
 // ================================================================
-// 6. GRÁFICOS (Visualização de Negócio)
+// 7. GRÁFICOS (Chart.js)
 // ================================================================
 let chartEstoque, chartLucro;
-
 function atualizarGraficos(dados) {
     const ctxE = document.getElementById('graficoEstoque');
     const ctxL = document.getElementById('graficoLucro');
-    
+    if (!ctxE || !ctxL) return;
+
     if (chartEstoque) chartEstoque.destroy();
     if (chartLucro) chartLucro.destroy();
 
+    // Gráfico de Barras: Estoque por Livro
     chartEstoque = new Chart(ctxE, {
         type: 'bar',
         data: {
-            labels: dados.map(d => d.titulo.substring(0,8)),
+            labels: dados.map(d => d.titulo.substring(0,10) + "..."),
             datasets: [{ label: 'Qtd Estoque', data: dados.map(d => d.estoque), backgroundColor: '#2ecc71' }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
 
+    // Gráfico de Linha: Lucro Acumulado
     chartLucro = new Chart(ctxL, {
         type: 'line',
         data: {
-            labels: dados.map(d => d.titulo.substring(0,8)),
-            datasets: [{ label: 'Lucro (R$)', data: dados.map(d => d.margemAcumulada), borderColor: '#27ae60', fill: true }]
+            labels: dados.map(d => d.titulo.substring(0,10) + "..."),
+            datasets: [{ label: 'Lucro (R$)', data: dados.map(d => d.margemAcumulada), borderColor: '#27ae60', backgroundColor: 'rgba(39, 174, 96, 0.1)', fill: true }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
