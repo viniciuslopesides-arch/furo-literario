@@ -3,41 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Administrativo - Furo Literário</title>
-    <link rel="stylesheet" href="login.css">
+    <title>Dashboard | Furo Literário</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Bibliotecas Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="admin-body">
 
-    <div class="login-card">
-        <img src="logo-admin.png" alt="Furo Literário" class="logo-login">
-        
-        <h1>Acesso Restrito 🔐</h1>
-        
-        <div id="login-email-area">
-            <input type="email" id="email" placeholder="E-mail do administrador">
-            <input type="password" id="senha" placeholder="Senha">
-            <button id="btnLogin">Entrar no Painel</button>
+    <!-- SEÇÃO: CABEÇALHO DE NAVEGAÇÃO -->
+    <header class="main-header">
+        <div class="header-content">
+            <img src="logo-admin.png" alt="Furo Literário" class="nav-logo">
+            <nav class="nav-user">
+                <span id="user-greeting">Carregando...</span>
+                <button id="btnLogout" class="btn-logout">Sair</button>
+            </nav>
         </div>
+    </header>
 
-        <div class="links-auxiliares">
-            <!-- Link para a outra página -->
-            <a href="esqueci-senha.html">Esqueci minha senha</a>
-        </div>
+    <main class="container">
+        <h1>Painel Administrativo 📚</h1>
 
-        <div class="divisor">ou acesse com</div>
+        <!-- SEÇÃO: MÉTRICAS FINANCEIRAS (Cards de Resumo) -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h3>Total em Estoque</h3>
+                <p id="total-estoque">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Lucro Previsto</h3>
+                <p id="lucro-total">R$ 0,00</p>
+            </div>
+        </section>
 
-        <div class="metodos-alternativos">
-            <button id="btnGoogle" style="background-color: #fff; color: #757575; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
-            </button>
-            <button id="btnSMS" style="background-color: #34495e;">📱 Via SMS / Telefone</button>
-        </div>
+        <!-- SEÇÃO: ANÁLISE VISUAL (Gráficos) -->
+        <section class="graficos-grid">
+            <div class="secao chart-container">
+                <h2>📦 Monitor de Estoque</h2>
+                <canvas id="graficoEstoque"></canvas>
+            </div>
+            <div class="secao chart-container">
+                <h2>💰 Lucro Potencial</h2>
+                <canvas id="graficoLucro"></canvas>
+            </div>
+        </section>
 
-        <!-- Área onde o erro de login aparece -->
-        <p id="erro" class="msg-erro"></p>
-    </div>
+        <!-- SEÇÃO: CONFIGURAÇÕES DE LOGÍSTICA -->
+        <section class="secao">
+            <h2>🚚 Logística e Entrega</h2>
+            <div class="input-inline">
+                <input type="number" id="inputTaxa" step="0.01" placeholder="Taxa de Frete (R$)">
+                <button id="btnAtualizarTaxa">Atualizar Frete</button>
+            </div>
+        </section>
 
-    <!-- O mesmo JS unificado serve aqui -->
-    <script type="module" src="login.js"></script>
+        <!-- SEÇÃO: CADASTRO E EDIÇÃO (Formulário) -->
+        <section class="secao">
+            <h2 id="tituloForm">📝 Gerenciar Catálogo</h2>
+            <div class="form-group">
+                <input type="text" id="tituloLivro" placeholder="Título do livro">
+                <input type="text" id="autorLivro" placeholder="Autor">
+                
+                <select id="categoriaLivro">
+                    <option value="" disabled selected>Selecione uma categoria</option>
+                    <option value="Fantasia Amazonense">Fantasia Amazonense</option>
+                    <option value="Fantasia">Fantasia</option>
+                    <option value="Ficção">Ficção</option>
+                    <option value="Acadêmico">Acadêmico</option>
+                    <option value="Outros">Outros</option>
+                </select>
+
+                <div class="input-row">
+                    <input type="number" id="custoLivro" placeholder="Custo de Aquisição (R$)">
+                    <input type="number" id="precoLivro" placeholder="Preço de Venda (R$)">
+                </div>
+                
+                <input type="number" id="estoqueLivro" placeholder="Quantidade em estoque">
+                <button id="btnSalvarLivro" class="btn-primary">Salvar no Acervo</button>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: VISUALIZAÇÃO DE DADOS (Listagens) -->
+        <section class="secao">
+            <h2>🗂️ Gestão de Inventário</h2>
+            <div id="listaLivros" class="data-grid">
+                <p class="loading-msg">Sincronizando com o banco de dados...</p>
+            </div>
+        </section>
+
+        <section class="secao">
+            <h2>🛒 Pedidos Recentes</h2>
+            <div id="listaPedidos" class="data-grid">
+                <p class="loading-msg">Aguardando novos pedidos...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Script principal como módulo -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>
