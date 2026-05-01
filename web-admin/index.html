@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Furo Literário</title>
+    <title>Painel Administrativo | Furo Literário</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
     
-    <!-- Bibliotecas Externas -->
+    <!-- BIBLIOTECAS: Gráficos e Ícones -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="admin-body">
 
-    <!-- SEÇÃO: CABEÇALHO DE NAVEGAÇÃO -->
+    <!-- SEÇÃO 1: HEADER (Navegação e Identidade) -->
     <header class="main-header">
         <div class="header-content">
             <img src="logo-admin.png" alt="Furo Literário" class="nav-logo">
@@ -26,7 +25,7 @@
     <main class="container">
         <h1>Painel Administrativo 📚</h1>
 
-        <!-- SEÇÃO: MÉTRICAS FINANCEIRAS (Cards de Resumo) -->
+        <!-- SEÇÃO 2: MÉTRICAS (Resumo Financeiro e Estoque) -->
         <section class="stats-grid">
             <div class="stat-card">
                 <h3>Total em Estoque</h3>
@@ -38,7 +37,7 @@
             </div>
         </section>
 
-        <!-- SEÇÃO: ANÁLISE VISUAL (Gráficos) -->
+        <!-- SEÇÃO 3: ANÁLISE VISUAL (Gráficos Dinâmicos) -->
         <section class="graficos-grid">
             <div class="secao chart-container">
                 <h2>📦 Monitor de Estoque</h2>
@@ -50,7 +49,7 @@
             </div>
         </section>
 
-        <!-- SEÇÃO: CONFIGURAÇÕES DE LOGÍSTICA -->
+        <!-- SEÇÃO 4: CONFIGURAÇÕES (Frete e Logística) -->
         <section class="secao">
             <h2>🚚 Logística e Entrega</h2>
             <div class="input-inline">
@@ -59,7 +58,7 @@
             </div>
         </section>
 
-        <!-- SEÇÃO: CADASTRO E EDIÇÃO (Formulário) -->
+        <!-- SEÇÃO 5: CADASTRO (Entrada de Dados e Upload) -->
         <section class="secao">
             <h2 id="tituloForm">📝 Gerenciar Catálogo</h2>
             <div class="form-group">
@@ -75,9 +74,17 @@
                     <option value="Outros">Outros</option>
                 </select>
 
+                <!-- Bloco de Upload: Aciona o input oculto -->
+                <div class="upload-container" onclick="document.getElementById('capaLivro').click()">
+                    <label class="label-upload">🖼️ Selecionar Capa do Livro</label>
+                    <input type="file" id="capaLivro" accept="image/*" style="display: none;">
+                    <progress id="uploadProgress" value="0" max="100"></progress>
+                    <small id="nomeArquivo"></small>
+                </div>
+
                 <div class="input-row">
-                    <input type="number" id="custoLivro" placeholder="Custo de Aquisição (R$)">
-                    <input type="number" id="precoLivro" placeholder="Preço de Venda (R$)">
+                    <input type="number" id="custoLivro" placeholder="Custo (R$)">
+                    <input type="number" id="precoLivro" placeholder="Preço Venda (R$)">
                 </div>
                 
                 <input type="number" id="estoqueLivro" placeholder="Quantidade em estoque">
@@ -85,23 +92,15 @@
             </div>
         </section>
 
-        <!-- SEÇÃO: VISUALIZAÇÃO DE DADOS (Listagens) -->
+        <!-- SEÇÃO 6: LISTAGENS (Visualização do Banco de Dados) -->
         <section class="secao">
             <h2>🗂️ Gestão de Inventário</h2>
             <div id="listaLivros" class="data-grid">
-                <p class="loading-msg">Sincronizando com o banco de dados...</p>
-            </div>
-        </section>
-
-        <section class="secao">
-            <h2>🛒 Pedidos Recentes</h2>
-            <div id="listaPedidos" class="data-grid">
-                <p class="loading-msg">Aguardando novos pedidos...</p>
+                <p class="loading-msg">Sincronizando...</p>
             </div>
         </section>
     </main>
 
-    <!-- Script principal como módulo -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
