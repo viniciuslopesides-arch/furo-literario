@@ -4,37 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Administrativo - Furo Literário</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
-        
-        /* Adicionei o estilo para a logo */
-        .logo-login { width: 80px; border-radius: 15px; margin-bottom: 15px; }
-        
-        h1 { color: #004d26; font-size: 1.5rem; margin-bottom: 25px; } /* Verde Furo Literário */
-        
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        input:focus { border-color: #004d26; outline: none; }
-
-        /* Botão seguindo a paleta do Admin */
-        button { width: 100%; background-color: #004d26; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #00331a; }
-        
-        .msg-erro { color: #e74c3c; font-size: 0.85rem; margin-top: 10px; display: none; }
-    </style>
+    <link rel="stylesheet" href="login.css">
 </head>
 <body>
 
     <div class="login-card">
+        <!-- Verifique se o nome do arquivo da logo está correto na sua pasta -->
         <img src="logo-admin.png" alt="Furo Literário" class="logo-login">
         
         <h1>Acesso Restrito 🔐</h1>
-        <input type="email" id="email" placeholder="E-mail do administrador">
-        <input type="password" id="senha" placeholder="Senha">
-        <button id="btnLogin">Entrar no Painel</button>
-        <p id="erro" class="msg-erro">Credenciais inválidas. Tente novamente.</p>
+        
+        <!-- Seção de Login por E-mail -->
+        <div id="login-email-area">
+            <input type="email" id="email" placeholder="E-mail do administrador" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button id="btnLogin">Entrar no Painel</button>
+        </div>
+
+        <div class="links-auxiliares">
+            <a href="esqueci-senha.html">Esqueci minha senha</a>
+        </div>
+
+        <div class="divisor">ou acesse com</div>
+
+        <!-- Métodos Sociais (Firebase Providers) -->
+        <div class="metodos-alternativos">
+            <button id="btnGoogle" style="background-color: #fff; color: #757575; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; margin-bottom: 10px; cursor: pointer; border-radius: 8px; padding: 12px; font-weight: bold;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
+            </button>
+            <button id="btnSMS" style="background-color: #34495e; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                📱 Via SMS / Telefone
+            </button>
+        </div>
+
+        <!-- O parágrafo de erro começa vazio e oculto -->
+        <p id="erro" class="msg-erro" style="display: none;"></p>
     </div>
 
+    <!-- O login.js unificado lida com a lógica desta página e da esqueci-senha.html -->
     <script type="module" src="login.js"></script>
 </body>
 </html>

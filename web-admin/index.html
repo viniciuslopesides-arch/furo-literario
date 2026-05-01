@@ -3,134 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Furo Literário</title>
-    <link rel="manifest" href="manifest.json">
-
-    <script>
-        if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-         .then(() => console.log("Service Worker registrado!"));
-        }
-    </script>
-
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
-        /* Estilização da Marca */
-        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #004d26; padding-bottom: 15px; margin-bottom: 30px; }
-        h2 { font-size: 1.2rem; color: #34495e; margin-top: 0; display: flex; align-items: center; gap: 10px; }
-        
-        /* Seções e Cards */
-        .secao { background: #ffffff; border: 1px solid #e1e4e8; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
-        .graficos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-        @media (max-width: 600px) { .graficos-grid { grid-template-columns: 1fr; } }
-
-        /* Resumo de Status */
-        .resumo-container { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
-        .card-resumo-mini { background: #f8f9fa; border: 1px solid #004d26; padding: 15px; border-radius: 8px; flex: 1; min-width: 150px; text-align: center; }
-        .card-resumo-mini p { margin: 5px 0; font-size: 0.9rem; }
-
-        /* Formulários e Botões */
-        .form-group { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; width: 100%; box-sizing: border-box; }
-        input:focus { border-color: #004d26; outline: none; box-shadow: 0 0 5px rgba(0, 77, 38, 0.3); }
-        button { background-color: #004d26; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background-color: #00331a; }
-        
-        /* Cards de Inventário e Pedidos */
-        #listaLivros, #listaPedidos { display: grid; gap: 15px; margin-top: 15px; }
-        .livro-card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 8px solid #ddd; }
-        .status-ok { border-left-color: #2ecc71; }
-        .status-baixo { border-left-color: #f39c12; }
-        .status-zerado { border-left-color: #e74c3c; }
-        
-        .badge-estoque { font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
-        .badge-zerado { background: #ffdada; color: #e74c3c; }
-        .badge-baixo { background: #fff3cd; color: #856404; }
-
-        .acoes-card { margin-top: 12px; display: flex; gap: 8px; }
-        .btn-edit { background: #f1c40f; color: #333; flex: 1; font-size: 0.9rem; }
-        .btn-del { background: #e74c3c; flex: 1; font-size: 0.9rem; }
-        .btn-venda { background: #2ecc71; width: 100%; margin-top: 8px; }
-        
-        canvas { width: 100% !important; height: auto !important; }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Login Administrativo - Furo Literário</title>
+    <link rel="stylesheet" href="login.css">
 </head>
 <body>
 
-    <div style="text-align: center; margin-top: 20px;">
-        <img src="logo-admin.png" alt="Furo Literário" style="width: 100px; border-radius: 15px;">
+    <div class="login-card">
+        <img src="logo-admin.png" alt="Furo Literário" class="logo-login">
+        
+        <h1>Acesso Restrito 🔐</h1>
+        
+        <div id="login-email-area">
+            <input type="email" id="email" placeholder="E-mail do administrador">
+            <input type="password" id="senha" placeholder="Senha">
+            <button id="btnLogin">Entrar no Painel</button>
+        </div>
+
+        <div class="links-auxiliares">
+            <!-- Link para a outra página -->
+            <a href="esqueci-senha.html">Esqueci minha senha</a>
+        </div>
+
+        <div class="divisor">ou acesse com</div>
+
+        <div class="metodos-alternativos">
+            <button id="btnGoogle" style="background-color: #fff; color: #757575; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Google
+            </button>
+            <button id="btnSMS" style="background-color: #34495e;">📱 Via SMS / Telefone</button>
+        </div>
+
+        <!-- Área onde o erro de login aparece -->
+        <p id="erro" class="msg-erro"></p>
     </div>
 
-    <div class="container">
-        <h1>Painel do Vendedor 📚</h1>
-
-        <div class="graficos-grid">
-            <div class="secao">
-                <h2>📦 Monitor de Estoque</h2>
-                <canvas id="graficoEstoque"></canvas>
-            </div>
-            <div class="secao">
-                <h2>💰 Lucro Potencial</h2>
-                <canvas id="graficoLucro"></canvas>
-            </div>
-        </div>
-
-        <div class="secao">
-            <h2 id="tituloStatus">📊 Status do Acervo</h2>
-            <div id="resumoStatus" class="resumo-container">
-                <p style="color: #999;">Calculando métricas financeiras...</p>
-            </div>
-        </div>
-
-        <div class="secao">
-            <h2>🚚 Logística e Entrega</h2>
-            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Ajuste a taxa de entrega padrão para todos os novos pedidos.</p>
-            <div style="display: flex; gap: 10px;">
-                <input type="number" id="inputTaxa" step="0.01" placeholder="R$ 0,00">
-                <button id="btnAtualizarTaxa">Atualizar Frete</button>
-            </div>
-        </div>
-
-        <div class="secao">
-            <h2 id="tituloForm">📝 Gerenciar Catálogo</h2>
-            <div class="form-group">
-                <input type="text" id="tituloLivro" placeholder="Título do livro">
-                <input type="text" id="autorLivro" placeholder="Autor">
-                <select id="categoriaLivro">
-                    <option value="" disabled selected>Selecione uma categoria</option>
-                    <option value="Fantasia Amazonense">Fantasia Amazonense</option>
-                    <option value="Fantasia">Fantasia</option>
-                    <option value="Ficção">Ficção</option>
-                    <option value="Acadêmico">Acadêmico</option>
-                    <option value="Outros">Outros</option>
-                </select>
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="custoLivro" step="0.01" placeholder="Custo (R$)">
-                    <input type="number" id="precoLivro" step="0.01" placeholder="Venda (R$)">
-                </div>
-                <input type="number" id="estoqueLivro" placeholder="Quantidade em estoque">
-                <button id="btnSalvarLivro">Salvar no Acervo</button>
-            </div>
-        </div>
-
-        <div class="secao">
-            <h2>🗂️ Gestão de Inventário</h2>
-            <div id="listaLivros">
-                <p style="text-align: center; color: #999;">Sincronizando com o banco de dados...</p>
-            </div>
-        </div>
-
-        <div class="secao">
-            <h2>🛒 Pedidos Recentes</h2>
-            <div id="listaPedidos">
-                <p style="text-align: center; color: #999;">Aguardando novas compras...</p>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="script.js"></script>
+    <!-- O mesmo JS unificado serve aqui -->
+    <script type="module" src="login.js"></script>
 </body>
 </html>

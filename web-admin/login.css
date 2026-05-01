@@ -1,0 +1,136 @@
+/* ================================================================
+   1. CONFIGURAÇÕES GERAIS (BODY & RESET)
+   Define o layout base, centralizando o card na tela.
+   ================================================================ */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #f0f2f5; /* Fundo cinza claro padrão de sistemas modernos */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    height: 100vh; /* Ocupa 100% da altura da janela */
+    margin: 0; 
+}
+
+/* ================================================================
+   2. ESTRUTURA DO CARD DE LOGIN
+   Define a caixa branca principal onde ficam os campos.
+   ================================================================ */
+.login-card { 
+    background: white; 
+    padding: 40px; 
+    border-radius: 15px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Sombra suave para profundidade */
+    width: 100%; 
+    max-width: 350px; 
+    text-align: center; 
+}
+
+/* ================================================================
+   3. ELEMENTOS VISUAIS (LOGO & TÍTULO)
+   Identidade visual da marca no acesso administrativo.
+   ================================================================ */
+.logo-login { 
+    width: 80px; 
+    border-radius: 15px; 
+    margin-bottom: 15px; 
+}
+
+h1 { 
+    color: #004d26; /* Verde institucional do Furo Literário */
+    font-size: 1.5rem; 
+    margin-bottom: 25px; 
+}
+
+/* ================================================================
+   4. CAMPOS DE ENTRADA (INPUTS)
+   Estilização dos campos de E-mail e Senha.
+   ================================================================ */
+input { 
+    width: 100%; 
+    padding: 12px; 
+    margin-bottom: 15px; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+    transition: 0.3s; /* Transição suave para o foco */
+}
+
+input:focus { 
+    border-color: #004d26; /* Muda para o verde ao clicar */
+    outline: none; 
+    box-shadow: 0 0 5px rgba(0, 77, 38, 0.2); /* Brilho verde sutil */
+}
+
+/* ================================================================
+   5. BOTÕES DE AÇÃO
+   Configuração do botão principal e efeitos de hover.
+   ================================================================ */
+button { 
+    width: 100%; 
+    background-color: #004d26; 
+    color: white; 
+    border: none; 
+    padding: 12px; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    transition: 0.3s; 
+    margin-bottom: 10px;
+}
+
+button:hover { 
+    background-color: #00331a; /* Verde levemente mais escuro ao passar o mouse */
+}
+
+/* ================================================================
+   6. LINKS AUXILIARES E NAVEGAÇÃO
+   Estilo para "Esqueci minha senha" e links de retorno.
+   ================================================================ */
+.links-auxiliares {
+    margin-top: 15px;
+    font-size: 0.85rem;
+}
+
+.links-auxiliares a {
+    color: #004d26;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.links-auxiliares a:hover {
+    text-decoration: underline; /* Sublinhado clássico apenas no hover */
+}
+
+/* ================================================================
+   7. DIVISOR DE MÉTODOS (OR SEPARATOR)
+   Cria aquela linha horizontal com texto no meio para logins sociais.
+   ================================================================ */
+.divisor {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.divisor::before, .divisor::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+    margin: 0 10px;
+}
+
+/* ================================================================
+   8. FEEDBACK DE ERRO
+   Mensagem de alerta caso o login falhe.
+   ================================================================ */
+.msg-erro { 
+    color: #e74c3c; /* Vermelho para erro */
+    font-size: 0.85rem; 
+    margin-top: 10px; 
+    display: none; /* Fica oculto até ser chamado pelo login.js */
+    padding: 8px;
+    background: #fdf2f2;
+    border-radius: 5px;
+}

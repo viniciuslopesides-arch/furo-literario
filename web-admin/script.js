@@ -1,213 +1,265 @@
-// 1. IMPORTAÇÕES
+// ================================================================
+// 1. IMPORTAÇÕES E CONFIGURAÇÃO INICIAL
+// ================================================================
 import { db } from '../firebase-config.js';
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { 
-    collection, addDoc, doc, updateDoc, deleteDoc, 
-    onSnapshot, getDoc, increment 
+    collection, addDoc, doc, updateDoc, deleteDoc, setDoc,
+    onSnapshot, query, where 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const auth = getAuth();
+let USUARIO_ID = ""; 
 
-// 2. SEGURANÇA
+// ================================================================
+// 2. SEGURANÇA E CONTROLE DE ACESSO
+// ================================================================
 onAuthStateChanged(auth, (user) => {
-    if (!user) window.location.href = "login.html";
+    if (!user) {
+        window.location.href = "login.html";
+    } else {
+        USUARIO_ID = user.uid; 
+        inicializarPainel();
+    }
 });
 
-// 3. ELEMENTOS
+// ================================================================
+// 3. ELEMENTOS DA INTERFACE (DOM)
+// ================================================================
 const listaDiv = document.getElementById('listaLivros');
 const btnSalvar = document.getElementById('btnSalvarLivro');
-const btnAtualizarTaxa = document.getElementById('btnAtualizarTaxa');
 const inputTaxa = document.getElementById('inputTaxa');
 const tituloForm = document.getElementById('tituloForm');
 const pedidosDiv = document.getElementById('listaPedidos');
-const resumoDiv = document.getElementById('resumoStatus');
 
-// --- 4. LISTAGEM, GRÁFICOS E RESUMO (Sincronizados) ---
-onSnapshot(collection(db, "livros"), (snapshot) => {
-    listaDiv.innerHTML = ""; 
-    const dadosParaGrafico = []; 
-    let totalItensEstoque = 0;
-    let lucroTotalPrevisto = 0;
+const inputNomeLoja = document.getElementById('admin-name');
+const inputWhatsLoja = document.getElementById('admin-whatsapp');
 
-    snapshot.forEach((docSnap) => {
-        const livro = docSnap.data();
-        const id = docSnap.id;
-        const estoque = Number(livro.estoque);
-        const preco = Number(livro.preco);
-        const custo = Number(livro.custo || 0);
-        const margemUnitaria = preco - custo;
-        const autor = livro.autor || "Não informado"; // Ajuste para ler o autor
+// ================================================================
+// 4. SINCRONIZAÇÃO EM TEMPO REAL (Firestore)
+// ================================================================
+function inicializarPainel() {
+    // Consulta Livros
+    const qLivros = query(collection(db, "livros"), where("ownerID", "==", USUARIO_ID));
+    onSnapshot(qLivros, (snapshot) => {
+        listaDiv.innerHTML = ""; 
+        const dadosParaGrafico = []; 
+        let totalItensEstoque = 0;
+        let lucroTotalPrevisto = 0;
 
-        // Acúmulo para o Resumo Financeiro
-        totalItensEstoque += estoque;
-        lucroTotalPrevisto += (margemUnitaria * estoque);
+        snapshot.forEach((docSnap) => {
+            const livro = docSnap.data();
+            const id = docSnap.id;
+            
+            // Conversão segura de valores
+            const estoque = Number(livro.estoque) || 0;
+            const preco = Number(livro.preco) || 0;
+            const custo = Number(livro.custo) || 0;
+            const margemUnitaria = preco - custo;
 
-        dadosParaGrafico.push({ titulo: livro.titulo, estoque, preco, custo });
+            totalItensEstoque += estoque;
+            lucroTotalPrevisto += (margemUnitaria * estoque);
+            dadosParaGrafico.push({ titulo: livro.titulo || "Sem Título", estoque, preco, custo });
 
-        // Interface do Inventário
-        let classeStatus = estoque <= 0 ? "status-zerado" : (estoque <= 5 ? "status-baixo" : "status-ok");
-        let badge = estoque <= 0 ? `<span class="badge-estoque badge-zerado">Indisponível</span>` : 
-                    (estoque <= 5 ? `<span class="badge-estoque badge-baixo">Estoque Crítico</span>` : "");
+            renderizarCardLivro(id, livro, estoque, preco, margemUnitaria);
+        });
 
-        listaDiv.innerHTML += `
-            <div class="livro-card ${classeStatus}">
-                ${badge}<br>
-                <strong>📖 ${livro.titulo}</strong><br>
-                <small>Autor: ${autor}</small><br> <small>Venda: <strong>R$ ${preco.toFixed(2)}</strong> | Lucro Unit: R$ ${margemUnitaria.toFixed(2)}</small><br>
-                <small>Estoque: <strong>${estoque}</strong> unidades</small>
-                <div class="acoes-card">
-                    <button class="btn-edit" onclick="prepararEdicao('${id}', '${livro.titulo}', '${autor}', ${preco}, ${estoque}, ${custo}, '${livro.categoria || ''}')">Editar</button>
-                    <button class="btn-del" onclick="deletarLivro('${id}')">Excluir</button>
-                </div>
-                <button class="btn-venda" onclick="vendaRapida('${id}', 1)" ${estoque <= 0 ? 'disabled' : ''}>
-                    ${estoque <= 0 ? 'Sem Estoque' : 'Simular Venda (-1)'}
-                </button>
-            </div>
-        `;
+        if (window.atualizarResumoFinanceiro) {
+            window.atualizarResumoFinanceiro(snapshot.size, totalItensEstoque, lucroTotalPrevisto);
+        }
+        atualizarGraficos(dadosParaGrafico);
     });
 
-    // Atualiza os Cards de Resumo
-    if (resumoDiv) {
-        resumoDiv.innerHTML = `
-            <div class="card-resumo-mini">
-                <p>📚 <strong>Títulos:</strong> ${snapshot.size}</p>
-            </div>
-            <div class="card-resumo-mini">
-                <p>📦 <strong>Total Estoque:</strong> ${totalItensEstoque} un.</p>
-            </div>
-            <div class="card-resumo-mini">
-                <p>💰 <strong>Lucro Previsto:</strong> R$ ${lucroTotalPrevisto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
-            </div>
-        `;
-    }
-    atualizarGrafico(dadosParaGrafico);
-});
+    // Consulta Pedidos
+    const qPedidos = query(collection(db, "pedidos"), where("adminID", "==", USUARIO_ID));
+    onSnapshot(qPedidos, (snapshot) => {
+        renderizarPedidos(snapshot);
+    });
 
-// --- 5. OPERAÇÕES DE DADOS (CRUD) ---
+    // Consulta Configurações do Perfil
+    onSnapshot(doc(db, "configuracoes", USUARIO_ID), (snap) => {
+        if (snap.exists()) {
+            const config = snap.data();
+            if (inputTaxa) inputTaxa.value = config.taxa_entrega || 0;
+            if (inputNomeLoja) inputNomeLoja.value = config.nome_loja || "";
+            if (inputWhatsLoja) inputWhatsLoja.value = config.whatsapp || "";
+        }
+    });
+}
+
+// ================================================================
+// 5. OPERAÇÕES DE DADOS (CRUD)
+// ================================================================
+
+// Auxiliar para converter input de preço (aceita virgula e ponto)
+const parseMoeda = (valor) => Number(valor.toString().replace(/\s/g, '').replace(',', '.'));
+
 btnSalvar.addEventListener('click', async () => {
     const idEdicao = btnSalvar.dataset.idEdicao;
-    const dados = {
-        titulo: document.getElementById('tituloLivro').value,
-        autor: document.getElementById('autorLivro').value, // Mantido: captura do autor
-        categoria: document.getElementById('categoriaLivro').value,
-        preco: Number(document.getElementById('precoLivro').value.replace(',', '.')),
-        custo: Number(document.getElementById('custoLivro').value.replace(',', '.')),
-        estoque: Number(document.getElementById('estoqueLivro').value)
-    };
+    const whatsAdmin = inputWhatsLoja.value.trim();
 
-    if (!dados.titulo || isNaN(dados.preco)) return alert("Preencha título e preço corretamente!");
+    if (!whatsAdmin) return alert("Erro: Cadastre seu WhatsApp nas configurações antes de salvar livros!");
+
+    const titulo = document.getElementById('tituloLivro').value.trim();
+    if (!titulo) return alert("Erro: O título do livro é obrigatório!");
+
+    const dados = {
+        titulo: titulo,
+        autor: document.getElementById('autorLivro').value.trim() || "Desconhecido",
+        categoria: document.getElementById('categoriaLivro').value,
+        preco: parseMoeda(document.getElementById('precoLivro').value),
+        custo: parseMoeda(document.getElementById('custoLivro').value),
+        estoque: Math.floor(Number(document.getElementById('estoqueLivro').value)) || 0,
+        capaUrl: document.getElementById('capaLivroUrl').value.trim(),
+        ownerID: USUARIO_ID, 
+        whatsappVendedor: whatsAdmin,
+        ultimoUpdate: new Date()
+    };
 
     try {
         if (idEdicao) {
             await updateDoc(doc(db, "livros", idEdicao), dados);
-            delete btnSalvar.dataset.idEdicao;
             btnSalvar.innerText = "Salvar no Acervo";
-            tituloForm.innerText = "Gerenciar Catálogo";
+            delete btnSalvar.dataset.idEdicao;
         } else {
+            dados.timestamp = new Date(); // Criado em
             await addDoc(collection(db, "livros"), dados);
         }
-        // Ajuste: Limpa todos os campos, inclusive o autor
-        document.querySelectorAll('.form-group input, .form-group select').forEach(i => i.value = "");
-    } catch (e) { console.error(e); }
+        limparFormulario();
+        alert("Sucesso: Livro salvo no catálogo! 📚");
+    } catch (e) { 
+        console.error("Erro ao salvar livro:", e);
+        alert("Erro ao salvar no banco de dados.");
+    }
 });
 
-// Logística
-btnAtualizarTaxa.addEventListener('click', async () => {
-    await updateDoc(doc(db, "configuracoes", "loja"), { taxa_entrega: Number(inputTaxa.value) });
-    alert("Taxa atualizada! 🚚");
-});
+window.salvarConfiguracoes = async () => {
+    const dadosConfig = {
+        nome_loja: inputNomeLoja.value.trim(),
+        whatsapp: inputWhatsLoja.value.trim(),
+        taxa_entrega: parseMoeda(inputTaxa.value)
+    };
+    
+    try {
+        await setDoc(doc(db, "configuracoes", USUARIO_ID), dadosConfig, { merge: true });
+        alert("Perfil atualizado com sucesso! 🚀");
+    } catch (e) {
+        console.error("Erro ao salvar perfil:", e);
+        alert("Erro ao atualizar configurações.");
+    }
+};
 
-onSnapshot(doc(db, "configuracoes", "loja"), (snap) => {
-    if (snap.exists()) inputTaxa.value = snap.data().taxa_entrega;
-});
+// ================================================================
+// 6. FUNÇÕES DE APOIO E INTERFACE (HELPERS)
+// ================================================================
 
-// Pedidos
-onSnapshot(collection(db, "pedidos"), (snapshot) => {
-    pedidosDiv.innerHTML = snapshot.empty ? '<p style="text-align: center; color: #999;">Sem pedidos.</p>' : "";
+function renderizarCardLivro(id, livro, estoque, preco, margem) {
+    const classeStatus = estoque <= 0 ? "status-zerado" : (estoque <= 5 ? "status-baixo" : "status-ok");
+    const capa = livro.capaUrl || 'https://via.placeholder.com/150x200?text=Sem+Capa';
+    
+    listaDiv.innerHTML += `
+        <div class="livro-card ${classeStatus}">
+            <img src="${capa}" alt="${livro.titulo}"
+                 style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+            <strong>📖 ${livro.titulo}</strong><br>
+            <small>Autor: ${livro.autor}</small><br>
+            <small>Venda: R$ ${preco.toFixed(2)} | Lucro: R$ ${margem.toFixed(2)}</small><br>
+            <small>Estoque: <strong>${estoque}</strong> un</small>
+            <div class="acoes-card">
+                <button class="btn-edit" onclick="prepararEdicao('${id}', '${livro.titulo.replace(/'/g, "\\'")}', '${livro.autor.replace(/'/g, "\\'")}', ${preco}, ${estoque}, ${livro.custo}, '${livro.categoria}', '${livro.capaUrl}')">Editar</button>
+                <button class="btn-del" onclick="deletarLivro('${id}')">Excluir</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderizarPedidos(snapshot) {
+    pedidosDiv.innerHTML = snapshot.empty ? '<p style="padding:20px; opacity:0.6;">Nenhum pedido recebido ainda.</p>' : "";
     snapshot.forEach((docSnap) => {
         const p = docSnap.data();
         const cores = { "Pendente": "#f39c12", "Pago": "#2ecc71", "Enviado": "#3498db" };
         pedidosDiv.innerHTML += `
             <div class="livro-card" style="border-left: 8px solid ${cores[p.status] || '#ddd'}">
-                <strong>👤 ${p.nome_cliente}</strong><br>
-                <small>${p.itens_resumo} | Total: R$ ${Number(p.total).toFixed(2)}</small>
+                <strong>👤 ${p.nome_cliente || 'Cliente'}</strong><br>
+                <small>${p.itens_resumo || 'Itens não listados'}</small><br>
+                <small>Total: <strong>R$ ${Number(p.total || 0).toFixed(2)}</strong></small>
                 <div style="margin-top:10px">
-                    <select onchange="atualizarStatusPedido('${docSnap.id}', this.value)">
+                    <select onchange="atualizarStatusPedido('${docSnap.id}', this.value)" style="padding: 5px; border-radius: 4px;">
                         <option value="Pendente" ${p.status === 'Pendente'?'selected':''}>Pendente</option>
                         <option value="Pago" ${p.status === 'Pago'?'selected':''}>Pago</option>
                         <option value="Enviado" ${p.status === 'Enviado'?'selected':''}>Enviado</option>
                     </select>
-                    <button class="btn-del" onclick="deletarPedido('${docSnap.id}')">Apagar</button>
+                    <button class="btn-del" onclick="deletarPedido('${docSnap.id}')" style="margin-left:5px">Apagar</button>
                 </div>
             </div>`;
     });
-});
+}
 
-// --- 6. FUNÇÕES GLOBAIS ---
-window.vendaRapida = async (id, qtd) => {
-    const ref = doc(db, "livros", id);
-    const snap = await getDoc(ref);
-    if (snap.exists() && snap.data().estoque >= qtd) await updateDoc(ref, { estoque: increment(-qtd) });
-};
+function limparFormulario() {
+    document.querySelectorAll('.form-group input, .form-group select').forEach(i => i.value = "");
+    tituloForm.innerText = "Gerenciar Catálogo";
+}
 
-window.prepararEdicao = (id, t, a, p, e, c, cat) => {
+// Funções globais vinculadas ao objeto window
+window.deletarLivro = async (id) => { if(confirm("Tem certeza que deseja excluir este livro?")) await deleteDoc(doc(db, "livros", id)); };
+window.atualizarStatusPedido = async (id, s) => { await updateDoc(doc(db, "pedidos", id), { status: s }); };
+window.deletarPedido = async (id) => { if(confirm("Apagar este registro de pedido permanentemente?")) await deleteDoc(doc(db, "pedidos", id)); };
+
+window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
     document.getElementById('tituloLivro').value = t;
-    document.getElementById('autorLivro').value = a; // Ajuste: preenche o campo autor na edição
+    document.getElementById('autorLivro').value = a;
     document.getElementById('precoLivro').value = p;
     document.getElementById('estoqueLivro').value = e;
     document.getElementById('custoLivro').value = c;
     document.getElementById('categoriaLivro').value = cat;
+    document.getElementById('capaLivroUrl').value = url;
+    
     btnSalvar.dataset.idEdicao = id;
     btnSalvar.innerText = "Atualizar Título";
     tituloForm.innerText = "Editando: " + t;
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-window.deletarLivro = async (id) => { if(confirm("Remover?")) await deleteDoc(doc(db, "livros", id)); };
-window.atualizarStatusPedido = async (id, s) => { await updateDoc(doc(db, "pedidos", id), { status: s }); };
-window.deletarPedido = async (id) => { if(confirm("Apagar pedido?")) await deleteDoc(doc(db, "pedidos", id)); };
-
-// --- 7. GRÁFICOS ---
+// ================================================================
+// 7. GRÁFICOS (Chart.js)
+// ================================================================
 let meuGraficoEstoque, meuGraficoLucro;
 
-function atualizarGrafico(livros) {
+function atualizarGraficos(livros) {
     const canvasE = document.getElementById('graficoEstoque');
     const canvasL = document.getElementById('graficoLucro');
     if(!canvasE || !canvasL) return;
 
-    const ctxE = canvasE.getContext('2d');
-    const ctxL = canvasL.getContext('2d');
-    
-    const labels = livros.map(l => l.titulo.substring(0, 10) + '...');
+    const labels = livros.map(l => l.titulo.length > 12 ? l.titulo.substring(0, 10) + '...' : l.titulo);
     
     if (meuGraficoEstoque) meuGraficoEstoque.destroy();
-    meuGraficoEstoque = new Chart(ctxE, {
+    meuGraficoEstoque = new Chart(canvasE.getContext('2d'), {
         type: 'bar',
         data: {
             labels,
             datasets: [{
-                label: 'Estoque',
+                label: 'Itens em Estoque',
                 data: livros.map(l => l.estoque),
-                backgroundColor: livros.map(l => l.estoque <= 5 ? '#e74c3c' : '#004d26')
+                backgroundColor: livros.map(l => l.estoque <= 5 ? '#e74c3c' : '#27ae60')
             }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
     if (meuGraficoLucro) meuGraficoLucro.destroy();
-    meuGraficoLucro = new Chart(ctxL, {
+    meuGraficoLucro = new Chart(canvasL.getContext('2d'), {
         type: 'line',
         data: {
             labels,
             datasets: [{
-                label: 'Lucro Total',
-                data: livros.map(l => ((l.preco - l.custo) * l.estoque).toFixed(2)),
+                label: 'Lucro Potencial (R$)',
+                data: livros.map(l => (l.preco - l.custo) * l.estoque),
                 borderColor: '#2ecc71',
                 backgroundColor: 'rgba(46, 204, 113, 0.1)',
                 fill: true,
                 tension: 0.3
             }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
