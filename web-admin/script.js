@@ -12,31 +12,34 @@ const auth = getAuth();
 let USUARIO_ID = ""; 
 
 /* ================================================================
-   2. SEGURANÇA E AUTH (ESTADO DO USUÁRIO)
+   2. SEGURANÇA E AUTH (CONTROLE DE ACESSO)
    ================================================================ */
 onAuthStateChanged(auth, (user) => {
     if (!user) {
+        // Redireciona se não houver sessão ativa
         window.location.href = "login.html"; 
     } else {
         USUARIO_ID = user.uid; 
+        
+        // Atualiza saudação no Header
         const greeting = document.getElementById('user-greeting');
         if (greeting) greeting.innerText = `Olá, ${user.email.split('@')[0]}`;
         
-        // Dispara as funções iniciais
+        // Inicializa as rotinas do painel
         inicializarPainel(); 
         carregarDadosPerfil();
         gerarLinkVendedor(); 
     }
 });
 
-// Evento de Logout
+// Evento Global de Logout
 document.getElementById('btnLogout')?.addEventListener('click', () => signOut(auth));
 
 /* ================================================================
    3. CORE: SINCRONIZAÇÃO EM TEMPO REAL (KPIs E LIVROS)
    ================================================================ */
 function inicializarPainel() {
-    // Filtra livros apenas do usuário logado (Regra SaaS)
+    // Escuta apenas documentos onde o ownerID é o usuário atual
     const qLivros = query(collection(db, "livros"), where("ownerID", "==", USUARIO_ID));
     
     onSnapshot(qLivros, (snapshot) => {
@@ -50,35 +53,40 @@ function inicializarPainel() {
         snapshot.forEach((docSnap) => {
             const livro = docSnap.data();
             const estoque = Number(livro.estoque) || 0;
-            const margem = (Number(livro.preco) || 0) - (Number(livro.custo) || 0);
+            const preco = Number(livro.preco) || 0;
+            const custo = Number(livro.custo) || 0;
+            const margem = preco - custo;
 
             totalEstoque += estoque;
             lucroTotal += (margem * estoque);
             
+            // Prepara dados para os gráficos do Chart.js
             dadosGrafico.push({ 
                 titulo: livro.titulo || "Sem título", 
                 estoque, 
                 margemAcumulada: margem * estoque 
             });
 
+            // Renderiza o card visual
             renderizarCardLivro(docSnap.id, livro, estoque, margem);
         });
 
-        // Atualiza indicadores no topo
+        // Atualiza os contadores no dashboard (Seção 2 do HTML)
         const elEstoque = document.getElementById('total-estoque');
         const elLucro = document.getElementById('lucro-total');
         if (elEstoque) elEstoque.innerText = totalEstoque;
         if (elLucro) elLucro.innerText = `R$ ${lucroTotal.toFixed(2).replace('.', ',')}`;
         
+        // Atualiza as barras e linhas (Seção 3 do HTML)
         atualizarGraficos(dadosGrafico);
     });
 }
 
 /* ================================================================
-   4. CONFIGURAÇÕES: PERFIL E GERADOR DE LINK
+   4. CONFIGURAÇÕES: PERFIL E GERADOR DE LINK (SAAS)
    ================================================================ */
 
-// Busca dados existentes do perfil para preencher os inputs automaticamente
+// Recupera dados salvos da loja para preencher o formulário
 async function carregarDadosPerfil() {
     try {
         const docRef = doc(db, "configuracoes", USUARIO_ID);
@@ -94,33 +102,32 @@ async function carregarDadosPerfil() {
     }
 }
 
-// Gera o link personalizado para a vitrine do cliente
+// Gera a URL única para a vitrine do cliente final
 function gerarLinkVendedor() {
     const inputLink = document.getElementById('link-vitrine');
     if (inputLink && USUARIO_ID) {
-        // Removido o espaço em branco e garantido o caminho da pasta
         const urlBase = "https://viniciuslopesides-arch.github.io/furo-literario/web-cliente/";
         inputLink.value = `${urlBase}?id=${USUARIO_ID}`;
     }
 }
 
-// Função Global para o botão de copiar
+// Copia o link gerado para a área de transferência
 window.copiarLink = () => {
     const input = document.getElementById('link-vitrine');
     if (!input.value) return alert("Salve seu perfil primeiro!");
     
     input.select();
-    input.setSelectionRange(0, 99999); // Para dispositivos móveis
+    input.setSelectionRange(0, 99999); 
     navigator.clipboard.writeText(input.value);
-    alert("Link copiado! 🚀");
+    alert("Link copiado para a bio! 🚀");
 };
 
-// Salva ou atualiza os dados da loja (Nome e WhatsApp)
+// Salva metadados da loja no Firestore
 window.salvarPerfil = async () => {
     const nomeLoja = document.getElementById('config-nome').value.trim();
     const whats = document.getElementById('config-whatsapp').value.trim();
 
-    if (!nomeLoja || !whats) return alert("Preencha o nome e o WhatsApp!");
+    if (!nomeLoja || !whats) return alert("Por favor, preencha o Nome e o WhatsApp.");
 
     try {
         await setDoc(doc(db, "configuracoes", USUARIO_ID), {
@@ -130,11 +137,11 @@ window.salvarPerfil = async () => {
             ultimaAlteracao: new Date()
         }, { merge: true });
 
-        alert("Perfil atualizado com sucesso!");
-        gerarLinkVendedor(); // Atualiza o link caso tenha mudado algo
+        alert("Configurações salvas com sucesso!");
+        gerarLinkVendedor();
     } catch (error) {
         console.error("Erro ao salvar perfil:", error);
-        alert("Erro ao salvar configurações.");
+        alert("Falha ao salvar configurações.");
     }
 };
 
@@ -147,7 +154,7 @@ btnSalvar?.addEventListener('click', async () => {
     const idEdicao = btnSalvar.dataset.idEdicao;
     
     btnSalvar.disabled = true;
-    btnSalvar.innerText = "Processando...";
+    btnSalvar.innerText = "Salvando...";
 
     try {
         const dados = {
@@ -170,8 +177,8 @@ btnSalvar?.addEventListener('click', async () => {
         
         limparFormulario();
     } catch (error) {
-        console.error("Erro na operação:", error);
-        alert("Erro ao salvar livro.");
+        console.error("Erro ao processar livro:", error);
+        alert("Erro ao salvar. Verifique se todos os campos estão corretos.");
     } finally {
         btnSalvar.disabled = false;
         btnSalvar.innerText = "Salvar no Acervo";
@@ -179,7 +186,7 @@ btnSalvar?.addEventListener('click', async () => {
     }
 });
 
-// Auxiliar para preencher formulário na edição
+// Preenche o formulário para edição (Modo Update)
 window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
     document.getElementById('tituloLivro').value = t;
     document.getElementById('autorLivro').value = a;
@@ -190,23 +197,29 @@ window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
     document.getElementById('capaURL').value = url; 
     
     btnSalvar.dataset.idEdicao = id;
-    btnSalvar.innerText = "Atualizar Livro";
+    btnSalvar.innerText = "Atualizar Cadastro";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 /* ================================================================
-   6. INTERFACE E UI (CARDS E EXCLUSÃO)
+   6. INTERFACE E UI (RENDERIZAÇÃO DE CARDS)
    ================================================================ */
 function renderizarCardLivro(id, livro, estoque, margem) {
+    // Lógica de alerta visual para estoque
     const statusClass = estoque <= 0 ? "status-zerado" : (estoque <= 5 ? "status-baixo" : "status-ok");
-    const urlImagem = livro.capaURL || 'https://via.placeholder.com/150?text=Sem+Capa';
     
+    // Tratamento robusto para capas de livros
+    const urlImagem = (livro.capaURL && livro.capaURL.trim() !== "") 
+        ? livro.capaURL 
+        : 'https://books.google.com/googlebooks/images/no_cover_thumb.gif';
+
     const card = `
         <div class="livro-card ${statusClass}">
-            <img src="${urlImagem}" class="capa-mini" onerror="this.src='https://via.placeholder.com/150?text=Erro+Capa';">
+            <img src="${urlImagem}" class="capa-mini" 
+                 onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Capa+Indisponivel';">
             <div class="livro-info">
                 <strong>${livro.titulo}</strong>
-                <p><small>Qtd: ${estoque} | Margem: R$ ${margem.toFixed(2)}</small></p>
+                <p><small>Estoque: ${estoque} | Margem: R$ ${margem.toFixed(2).replace('.', ',')}</small></p>
             </div>
             <div class="acoes-card">
                 <button class="btn-edit" id="edit-${id}">Editar</button>
@@ -217,13 +230,15 @@ function renderizarCardLivro(id, livro, estoque, margem) {
     
     document.getElementById('listaLivros').insertAdjacentHTML('beforeend', card);
 
+    // Event listener para edição segura
     document.getElementById(`edit-${id}`).addEventListener('click', () => {
         window.prepararEdicao(id, livro.titulo, livro.autor, livro.preco, estoque, livro.custo, livro.categoria, livro.capaURL || '');
     });
 }
 
+// Remoção definitiva do Firestore
 window.deletarLivro = async (id) => { 
-    if(confirm("Deseja realmente excluir este livro do acervo?")) {
+    if(confirm("Tem certeza que deseja remover este livro? Esta ação não pode ser desfeita.")) {
         try {
             await deleteDoc(doc(db, "livros", id));
         } catch (e) {
@@ -232,6 +247,7 @@ window.deletarLivro = async (id) => {
     }
 };
 
+// Reseta o formulário após salvar ou cancelar
 function limparFormulario() {
     document.querySelectorAll('.form-group input, .form-group select').forEach(i => i.value = "");
     const btn = document.getElementById('btnSalvarLivro');
@@ -242,7 +258,7 @@ function limparFormulario() {
 }
 
 /* ================================================================
-   7. GRÁFICOS (CHART.JS)
+   7. ANÁLISE GRÁFICA (CHART.JS)
    ================================================================ */
 let chartEstoque, chartLucro;
 function atualizarGraficos(dados) {
@@ -253,20 +269,33 @@ function atualizarGraficos(dados) {
     if (chartEstoque) chartEstoque.destroy();
     if (chartLucro) chartLucro.destroy();
 
+    // Gráfico de Barras: Inventário
     chartEstoque = new Chart(ctxE, {
         type: 'bar',
         data: {
-            labels: dados.map(d => d.titulo.substring(0,10) + "..."),
-            datasets: [{ label: 'Qtd Estoque', data: dados.map(d => d.estoque), backgroundColor: '#2ecc71' }]
+            labels: dados.map(d => d.titulo.length > 12 ? d.titulo.substring(0,10) + "..." : d.titulo),
+            datasets: [{ 
+                label: 'Quantidade em Estoque', 
+                data: dados.map(d => d.estoque), 
+                backgroundColor: '#2ecc71' 
+            }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
 
+    // Gráfico de Linha: Projeção de Lucro
     chartLucro = new Chart(ctxL, {
         type: 'line',
         data: {
-            labels: dados.map(d => d.titulo.substring(0,10) + "..."),
-            datasets: [{ label: 'Lucro Previsto (R$)', data: dados.map(d => d.margemAcumulada), borderColor: '#27ae60', fill: true }]
+            labels: dados.map(d => d.titulo.length > 12 ? d.titulo.substring(0,10) + "..." : d.titulo),
+            datasets: [{ 
+                label: 'Lucro Acumulado (R$)', 
+                data: dados.map(d => d.margemAcumulada), 
+                borderColor: '#27ae60', 
+                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });

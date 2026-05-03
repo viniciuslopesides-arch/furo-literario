@@ -1,11 +1,6 @@
 {
+  "short_name": "FuroAdmin",
   "name": "Furo Literário - Admin",
-  "short_name": "FL Admin",
-  "description": "Painel de Gestão da Livraria Furo Literário",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#121212",
   "icons": [
     {
       "src": "logo-admin.png",
@@ -17,5 +12,11 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0d1117",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#004d26",
+  "description": "Painel Administrativo para gestão de acervo regional."
 }
