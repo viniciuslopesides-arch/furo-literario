@@ -98,8 +98,8 @@ async function carregarDadosPerfil() {
 function gerarLinkVendedor() {
     const inputLink = document.getElementById('link-vitrine');
     if (inputLink && USUARIO_ID) {
-        // Altere para a URL real de produção quando publicar no GitHub Pages
-        const urlBase = " https://viniciuslopesides-arch.github.io/furo-literario/web-cliente/";
+        // Removido o espaço em branco e garantido o caminho da pasta
+        const urlBase = "https://viniciuslopesides-arch.github.io/furo-literario/web-cliente/";
         inputLink.value = `${urlBase}?id=${USUARIO_ID}`;
     }
 }
