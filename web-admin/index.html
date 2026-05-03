@@ -58,7 +58,7 @@
             </div>
         </section>
 
-        <!-- SEÇÃO 5: PERFIL E CADASTRO (Entrada de Dados) -->
+        <!-- SEÇÃO 5: PERFIL E LINK DE VENDA -->
         <section class="secao">
             <h2>⚙️ Perfil da Loja</h2>
             <div class="form-group">
@@ -70,12 +70,23 @@
                 
                 <button class="btn-primary" onclick="salvarPerfil()">Salvar Configurações</button>
             </div>
+
+            <hr class="divisor">
+
+            <div class="form-group">
+                <label>🔗 Seu Link de Venda (Compartilhe na Bio):</label>
+                <div class="input-inline">
+                    <input type="text" id="link-vitrine" readonly placeholder="Gere seu link salvando o perfil...">
+                    <button onclick="copiarLink()" class="btn-secondary">Copiar Link</button>
+                </div>
+                <small>Este link abrirá sua vitrine personalizada para os clientes.</small>
+            </div>
         </section>
     
+        <!-- SEÇÃO 6: GERENCIAMENTO DE CATÁLOGO -->
         <section class="secao">
             <h2 id="tituloForm">📝 Gerenciar Catálogo</h2>
             <div class="form-group">
-                <!-- Informações Básicas -->
                 <input type="text" id="tituloLivro" placeholder="Título do livro">
                 <input type="text" id="autorLivro" placeholder="Autor">
                 
@@ -88,23 +99,20 @@
                     <option value="Outros">Outros</option>
                 </select>
 
-                <!-- URL da Capa (Ajustado para evitar conflitos de ID) -->
                 <label>Link da Imagem (Capa):</label>
                 <input type="text" id="capaURL" placeholder="Cole aqui a URL da imagem (ex: https://...)">
                 
-                <!-- Dados Financeiros -->
                 <div class="input-row">
                     <input type="number" id="custoLivro" placeholder="Custo (R$)">
                     <input type="number" id="precoLivro" placeholder="Preço Venda (R$)">
                 </div>
                 
-                <!-- Controle de Inventário -->
                 <input type="number" id="estoqueLivro" placeholder="Quantidade em estoque">
                 <button id="btnSalvarLivro" class="btn-primary">Salvar no Acervo</button>
             </div>
         </section>
 
-        <!-- SEÇÃO 6: LISTAGENS (Visualização em Tempo Real) -->
+        <!-- SEÇÃO 7: LISTAGENS -->
         <section class="secao">
             <h2>🗂️ Gestão de Inventário</h2>
             <div id="listaLivros" class="data-grid">
@@ -113,7 +121,6 @@
         </section>
     </main>
 
-    <!-- Script principal com type module para suportar importações do Firebase -->
     <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -1,16 +1,19 @@
-// ================================================================
-// 1. IMPORTAÇÕES (Dependências do Firebase)
-// ================================================================
+/* ================================================================
+   1. IMPORTAÇÕES E CONFIGURAÇÃO INICIAL
+   ================================================================ */
 import { db } from '../firebase-config.js';
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, where, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+    collection, addDoc, doc, updateDoc, deleteDoc, 
+    onSnapshot, query, where, setDoc, getDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const auth = getAuth();
 let USUARIO_ID = ""; 
 
-// ================================================================
-// 2. SEGURANÇA E AUTH
-// ================================================================
+/* ================================================================
+   2. SEGURANÇA E AUTH (ESTADO DO USUÁRIO)
+   ================================================================ */
 onAuthStateChanged(auth, (user) => {
     if (!user) {
         window.location.href = "login.html"; 
@@ -18,18 +21,22 @@ onAuthStateChanged(auth, (user) => {
         USUARIO_ID = user.uid; 
         const greeting = document.getElementById('user-greeting');
         if (greeting) greeting.innerText = `Olá, ${user.email.split('@')[0]}`;
+        
+        // Dispara as funções iniciais
         inicializarPainel(); 
+        carregarDadosPerfil();
+        gerarLinkVendedor(); 
     }
 });
 
 // Evento de Logout
 document.getElementById('btnLogout')?.addEventListener('click', () => signOut(auth));
 
-// ================================================================
-// 3. CORE: SINCRONIZAÇÃO EM TEMPO REAL
-// ================================================================
+/* ================================================================
+   3. CORE: SINCRONIZAÇÃO EM TEMPO REAL (KPIs E LIVROS)
+   ================================================================ */
 function inicializarPainel() {
-    // Filtra livros apenas do usuário logado (Regra de Negócio SaaS)
+    // Filtra livros apenas do usuário logado (Regra SaaS)
     const qLivros = query(collection(db, "livros"), where("ownerID", "==", USUARIO_ID));
     
     onSnapshot(qLivros, (snapshot) => {
@@ -54,54 +61,91 @@ function inicializarPainel() {
                 margemAcumulada: margem * estoque 
             });
 
-            // Renderiza o card visual do livro
             renderizarCardLivro(docSnap.id, livro, estoque, margem);
         });
 
-        // Atualiza os indicadores de topo (KPIs)
+        // Atualiza indicadores no topo
         const elEstoque = document.getElementById('total-estoque');
         const elLucro = document.getElementById('lucro-total');
         if (elEstoque) elEstoque.innerText = totalEstoque;
-        if (elLucro) elLucro.innerText = `R$ ${lucroTotal.toFixed(2)}`;
+        if (elLucro) elLucro.innerText = `R$ ${lucroTotal.toFixed(2).replace('.', ',')}`;
         
-        // Sincroniza os gráficos com os novos dados
         atualizarGraficos(dadosGrafico);
     });
 }
 
-// ================================================================
-// 4. CONFIGURAÇÕES: PERFIL DA LOJA
-// ================================================================
-async function salvarPerfil() {
-    const user = auth.currentUser; 
-    if (!user) return alert("Você precisa estar logado!");
+/* ================================================================
+   4. CONFIGURAÇÕES: PERFIL E GERADOR DE LINK
+   ================================================================ */
 
+// Busca dados existentes do perfil para preencher os inputs automaticamente
+async function carregarDadosPerfil() {
+    try {
+        const docRef = doc(db, "configuracoes", USUARIO_ID);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const dados = docSnap.data();
+            document.getElementById('config-nome').value = dados.nome_loja || "";
+            document.getElementById('config-whatsapp').value = dados.whatsapp || "";
+        }
+    } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+    }
+}
+
+// Gera o link personalizado para a vitrine do cliente
+function gerarLinkVendedor() {
+    const inputLink = document.getElementById('link-vitrine');
+    if (inputLink && USUARIO_ID) {
+        // Altere para a URL real de produção quando publicar no GitHub Pages
+        const urlBase = "https://viniciuslopesides-arch.github.io/furo-literario/vendedor.html";
+        inputLink.value = `${urlBase}?id=${USUARIO_ID}`;
+    }
+}
+
+// Função Global para o botão de copiar
+window.copiarLink = () => {
+    const input = document.getElementById('link-vitrine');
+    if (!input.value) return alert("Salve seu perfil primeiro!");
+    
+    input.select();
+    input.setSelectionRange(0, 99999); // Para dispositivos móveis
+    navigator.clipboard.writeText(input.value);
+    alert("Link copiado! 🚀");
+};
+
+// Salva ou atualiza os dados da loja (Nome e WhatsApp)
+window.salvarPerfil = async () => {
     const nomeLoja = document.getElementById('config-nome').value.trim();
     const whats = document.getElementById('config-whatsapp').value.trim();
 
+    if (!nomeLoja || !whats) return alert("Preencha o nome e o WhatsApp!");
+
     try {
-        await setDoc(doc(db, "configuracoes", user.uid), {
+        await setDoc(doc(db, "configuracoes", USUARIO_ID), {
             nome_loja: nomeLoja,
             whatsapp: whats,
-            ownerID: user.uid
+            ownerID: USUARIO_ID,
+            ultimaAlteracao: new Date()
         }, { merge: true });
 
-        alert("Perfil atualizado!");
+        alert("Perfil atualizado com sucesso!");
+        gerarLinkVendedor(); // Atualiza o link caso tenha mudado algo
     } catch (error) {
         console.error("Erro ao salvar perfil:", error);
+        alert("Erro ao salvar configurações.");
     }
-}
-window.salvarPerfil = salvarPerfil;
+};
 
-// ================================================================
-// 5. OPERAÇÕES DE DADOS (Salvar / Editar / Deletar)
-// ================================================================
+/* ================================================================
+   5. OPERAÇÕES DE DADOS (CRUD - LIVROS)
+   ================================================================ */
 const btnSalvar = document.getElementById('btnSalvarLivro');
 
 btnSalvar?.addEventListener('click', async () => {
     const idEdicao = btnSalvar.dataset.idEdicao;
     
-    // Bloqueia o botão para evitar duplicidade no Firebase
     btnSalvar.disabled = true;
     btnSalvar.innerText = "Processando...";
 
@@ -127,7 +171,7 @@ btnSalvar?.addEventListener('click', async () => {
         limparFormulario();
     } catch (error) {
         console.error("Erro na operação:", error);
-        alert("Erro ao salvar. Verifique o console.");
+        alert("Erro ao salvar livro.");
     } finally {
         btnSalvar.disabled = false;
         btnSalvar.innerText = "Salvar no Acervo";
@@ -135,7 +179,7 @@ btnSalvar?.addEventListener('click', async () => {
     }
 });
 
-// Prepara o formulário para edição (Preenchimento Automático)
+// Auxiliar para preencher formulário na edição
 window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
     document.getElementById('tituloLivro').value = t;
     document.getElementById('autorLivro').value = a;
@@ -150,14 +194,11 @@ window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-// ================================================================
-// 6. AUXILIARES E UI (Renderização dos Cards)
-// ================================================================
+/* ================================================================
+   6. INTERFACE E UI (CARDS E EXCLUSÃO)
+   ================================================================ */
 function renderizarCardLivro(id, livro, estoque, margem) {
-    // Lógica de cores para o estoque (Usa o CSS definido no seu style.css)
     const statusClass = estoque <= 0 ? "status-zerado" : (estoque <= 5 ? "status-baixo" : "status-ok");
-    
-    // Tratamento para URL de imagem (Fallback para placeholder se falhar)
     const urlImagem = livro.capaURL || 'https://via.placeholder.com/150?text=Sem+Capa';
     
     const card = `
@@ -165,7 +206,7 @@ function renderizarCardLivro(id, livro, estoque, margem) {
             <img src="${urlImagem}" class="capa-mini" onerror="this.src='https://via.placeholder.com/150?text=Erro+Capa';">
             <div class="livro-info">
                 <strong>${livro.titulo}</strong>
-                <p><small>Estoque: ${estoque} | Lucro: R$ ${margem.toFixed(2)}</small></p>
+                <p><small>Qtd: ${estoque} | Margem: R$ ${margem.toFixed(2)}</small></p>
             </div>
             <div class="acoes-card">
                 <button class="btn-edit" id="edit-${id}">Editar</button>
@@ -174,16 +215,13 @@ function renderizarCardLivro(id, livro, estoque, margem) {
         </div>
     `;
     
-    const listaDiv = document.getElementById('listaLivros');
-    listaDiv.insertAdjacentHTML('beforeend', card);
+    document.getElementById('listaLivros').insertAdjacentHTML('beforeend', card);
 
-    // Evento de edição via ID para evitar erros de strings com aspas/espaços
     document.getElementById(`edit-${id}`).addEventListener('click', () => {
         window.prepararEdicao(id, livro.titulo, livro.autor, livro.preco, estoque, livro.custo, livro.categoria, livro.capaURL || '');
     });
 }
 
-// Exclusão de documento
 window.deletarLivro = async (id) => { 
     if(confirm("Deseja realmente excluir este livro do acervo?")) {
         try {
@@ -203,9 +241,9 @@ function limparFormulario() {
     }
 }
 
-// ================================================================
-// 7. GRÁFICOS (Chart.js)
-// ================================================================
+/* ================================================================
+   7. GRÁFICOS (CHART.JS)
+   ================================================================ */
 let chartEstoque, chartLucro;
 function atualizarGraficos(dados) {
     const ctxE = document.getElementById('graficoEstoque');
@@ -215,7 +253,6 @@ function atualizarGraficos(dados) {
     if (chartEstoque) chartEstoque.destroy();
     if (chartLucro) chartLucro.destroy();
 
-    // Gráfico de Barras: Estoque por Livro
     chartEstoque = new Chart(ctxE, {
         type: 'bar',
         data: {
@@ -225,12 +262,11 @@ function atualizarGraficos(dados) {
         options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Gráfico de Linha: Lucro Acumulado
     chartLucro = new Chart(ctxL, {
         type: 'line',
         data: {
             labels: dados.map(d => d.titulo.substring(0,10) + "..."),
-            datasets: [{ label: 'Lucro (R$)', data: dados.map(d => d.margemAcumulada), borderColor: '#27ae60', backgroundColor: 'rgba(39, 174, 96, 0.1)', fill: true }]
+            datasets: [{ label: 'Lucro Previsto (R$)', data: dados.map(d => d.margemAcumulada), borderColor: '#27ae60', fill: true }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
