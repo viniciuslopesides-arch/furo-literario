@@ -216,11 +216,13 @@ function renderizarCardLivro(id, livro, estoque, margem) {
     const card = `
         <div class="livro-card ${statusClass}">
             <img src="${urlImagem}" class="capa-mini" 
-                 onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Capa+Indisponivel';">
+                 onerror="this.onerror=null;this.src='https://books.google.com/googlebooks/images/no_cover_thumb.gif';">
+            
             <div class="livro-info">
                 <strong>${livro.titulo}</strong>
                 <p><small>Estoque: ${estoque} | Margem: R$ ${margem.toFixed(2).replace('.', ',')}</small></p>
             </div>
+
             <div class="acoes-card">
                 <button class="btn-edit" id="edit-${id}">Editar</button>
                 <button class="btn-del" onclick="window.deletarLivro('${id}')">Excluir</button>
@@ -256,7 +258,6 @@ function limparFormulario() {
         delete btn.dataset.idEdicao;
     }
 }
-
 /* ================================================================
    7. ANÁLISE GRÁFICA (CHART.JS)
    ================================================================ */
