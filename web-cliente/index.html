@@ -4,61 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Furo Literário | Livraria Online</title>
-    
+    <!-- CSS vinculado -->
     <link rel="stylesheet" href="style-cliente.css">
-    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="dark-theme">
 
     <header>
         <nav class="navbar">
-    <img src="logo-admin.png" alt="Furo Literário" class="logo">
-    
-    <div class="search-bar">
-        <input type="text" id="buscaLivro" placeholder="Pesquisar...">
-    </div>
-    
-    <div class="cart-icon" onclick="abrirCarrinho()">
-        <i class="fas fa-shopping-basket"></i>
-        <span id="cart-count">0</span>
-    </div>
-</nav>
+            <!-- Logo e Nome Dinâmico -->
+            <div class="logo-area">
+                <img src="logo-admin.png" alt="Furo Literário" class="logo">
+                <span id="nome-loja-vitrine" class="nome-loja">Carregando...</span>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" id="buscaLivro" placeholder="O que vamos ler hoje?">
+            </div>
+            
+            <div class="cart-icon" id="btn-carrinho-abrir">
+                <i class="fas fa-shopping-basket"></i>
+                <span id="cart-count">0</span>
+            </div>
+        </nav>
     </header>
 
     <main class="container">
-        
-        <section class="filtros">
-            <button class="btn-filtro active" data-categoria="todos">Todos</button>
-            <button class="btn-filtro" data-categoria="Literatura Amazonense">Amazonenses</button>
-            <button class="btn-filtro" data-categoria="Fantasia">Fantasia</button>
-            <button class="btn-filtro" data-categoria="Nacionais">Nacionais</button>
+        <!-- 1. Seção de Filtros -->
+        <section class="filtros-container">
+            <div class="filtros">
+                <button class="btn-filtro active" data-categoria="todos">Todos</button>
+                <button class="btn-filtro" data-categoria="Literatura Amazonense">Amazonenses</button>
+                <button class="btn-filtro" data-categoria="Fantasia">Fantasia</button>
+                <button class="btn-filtro" data-categoria="Nacionais">Nacionais</button>
+            </div>
         </section>
 
+        <!-- 2. Vitrine de Livros -->
         <section id="vitrine" class="grid-livros">
             <p class="carrinho-vazio">Buscando as melhores histórias para você...</p>
         </section>
     </main>
 
+    <!-- 3. Modal do Carrinho -->
     <div id="modal-carrinho" class="modal">
         <div class="modal-content">
-            <h2>Seu Carrinho</h2>
+            <div class="modal-header">
+                <h2>Seu Carrinho</h2>
+                <button class="btn-remover" id="btn-fechar-modal"><i class="fas fa-times"></i></button>
+            </div>
             
-            <div id="itens-carrinho"></div>
+            <div id="itens-carrinho">
+                <!-- Itens injetados via JS -->
+            </div>
             
             <div class="total-carrinho">
-                <span>Total:</span>
+                <span>Total Estimado:</span>
                 <span id="total-valor">R$ 0,00</span>
             </div>
             
-            <button id="btn-finalizar" class="btn-whatsapp" onclick="enviarPedido()">
+            <button id="btn-finalizar" class="btn-whatsapp">
                 <i class="fab fa-whatsapp"></i> Finalizar via WhatsApp
             </button>
             
-            <button onclick="fecharCarrinho()" class="btn-fechar">Continuar Comprando</button>
+            <button id="btn-continuar" class="btn-fechar">Continuar Comprando</button>
         </div>
     </div>
 
+    <!-- Firebase SDK e Lógica -->
     <script type="module" src="script-cliente.js"></script>
 </body>
 </html>

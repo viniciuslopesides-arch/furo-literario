@@ -1,462 +1,295 @@
 /* ================================================================
-   1. BASE E TEMA (CONFIGURAÇÕES GERAIS)
+   1. VARIÁVEIS E RESET
    ================================================================ */
+:root {
+    --bg-dark: #0d1117;
+    --bg-card: #161b22;
+    --bg-navbar: rgba(22, 27, 34, 0.95);
+    --green-primary: #004d26; /* Verde Furo Literário */
+    --green-glow: #2ecc71;
+    --text-main: #e6edf3;
+    --text-muted: #8b949e;
+    --border: #30363d;
+    --red-alert: #e74c3c;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 * {
-    box-sizing: border-box; /* Garante que padding não aumente o tamanho dos elementos */
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; /* Remove brilho azul ao clicar no mobile */
 }
 
 body {
-    background-color: #0d1117; 
-    color: #e6edf3;           
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     margin: 0;
-    padding: 0;
-    overflow-x: hidden; /* Evita scroll horizontal indesejado no mobile */
+    line-height: 1.5;
+    overflow-x: hidden;
 }
 
+/* Scrollbar Personalizada */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--green-glow); }
+
 /* ================================================================
-   2. NAVEGAÇÃO (NAVBAR E PESQUISA - VERSÃO FINAL UNIFICADA)
+   2. NAVEGAÇÃO (FIXA E OTIMIZADA)
    ================================================================ */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.8rem 15px;
-    gap: 12px; 
-    background: rgba(22, 27, 34, 0.90); 
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid #004d26;
+    padding: 0.8rem 5%;
+    gap: 15px;
+    background: var(--bg-navbar);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--green-primary);
     position: sticky;
     top: 0;
     z-index: 1000;
 }
 
-.logo { 
-    width: 42px; 
-    height: auto;
-    border-radius: 8px; 
-    flex-shrink: 0; 
-}
+.logo-area { display: flex; align-items: center; gap: 10px; }
+.logo { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+.nome-loja { font-weight: bold; font-size: 1.1rem; color: var(--green-glow); }
 
-.search-bar {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-}
-
+.search-bar { flex: 1; max-width: 500px; }
 .search-bar input {
-    background: #161b22;
-    border: 1px solid #30363d;
-    padding: 8px 15px;
-    border-radius: 20px;
-    color: white;
     width: 100%;
-    max-width: 500px; 
-    transition: 0.3s;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    border-radius: 25px;
+    color: white;
     font-size: 16px;
+    transition: var(--transition);
 }
-
 .search-bar input:focus {
-    border-color: #2ecc71;
+    border-color: var(--green-glow);
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.2);
     outline: none;
-    box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
 }
 
 .cart-icon {
-    flex-shrink: 0;
-    cursor: pointer;
-    font-size: 1.4rem;
-    color: #2ecc71;
-    display: flex;
-    align-items: center;
+    font-size: 1.5rem;
+    color: var(--green-glow);
     position: relative;
+    cursor: pointer;
     padding: 5px;
+    transition: var(--transition);
 }
-
+.cart-icon:hover { transform: scale(1.1); }
 #cart-count {
     position: absolute;
-    top: -2px;
-    right: -5px;
-    background: #e74c3c;
-    color: white;
+    top: 0; right: -2px;
+    background: var(--red-alert);
     font-size: 0.7rem;
-    font-weight: bold;
-    width: 18px;
+    font-weight: 900;
+    min-width: 18px;
     height: 18px;
     border-radius: 50%;
-    display: flex;
+    display: none; /* JS ativa quando houver itens */
     align-items: center;
     justify-content: center;
-    border: 2px solid #0d1117;
+    border: 2px solid var(--bg-dark);
 }
 
 /* ================================================================
-   RESPONSIVIDADE (MOBILE - TUDO EM UMA LINHA)
+   3. FILTROS E CONTEÚDO
    ================================================================ */
-@media (max-width: 768px) {
-    .navbar {
-        flex-wrap: nowrap !important; /* Proíbe a quebra de linha */
-        padding: 10px 10px !important;
-        gap: 8px !important;
-    }
-
-    .logo {
-        width: 35px !important;
-    }
-
-    .search-bar {
-        margin: 0 !important; /* Remove margens que empurram os itens */
-    }
-
-    .search-bar input {
-        padding: 8px 12px !important;
-        font-size: 14px !important;
-    }
-
-    /* Carrinho agora é um ícone comum na barra, sem ser flutuante */
-    .cart-icon { 
-        position: relative !important; 
-        bottom: auto !important;
-        right: auto !important;
-        width: auto !important;
-        height: auto !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        font-size: 1.3rem !important;
-    }
-
-    #cart-count {
-        width: 16px !important;
-        height: 16px !important;
-        font-size: 0.6rem !important;
-        top: -3px !important;
-        right: -3px !important;
-    }
+.filtros-container {
+    max-width: 1200px;
+    margin: 20px auto 0;
+    padding: 0 20px;
 }
-
-/* ================================================================
-   3. VITRINE E LAYOUT DE PRODUTOS (FILTROS, GRID E CARDS)
-   ================================================================ */
-
-/* --- Container dos Filtros (Estilo Pílulas) --- */
 .filtros {
     display: flex;
-    gap: 12px;
-    margin: 20px 0 30px 0;
-    padding: 5px 0;
-    overflow-x: auto; /* Permite scroll lateral no mobile se houver muitos filtros */
-    scrollbar-width: none; /* Firefox */
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: none;
 }
-
-.filtros::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+.filtros::-webkit-scrollbar { display: none; }
 
 .btn-filtro {
-    background: #161b22;
-    color: #8b949e;
-    border: 1px solid #30363d;
-    padding: 8px 22px;
-    border-radius: 25px;
-    cursor: pointer;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 8px 20px;
+    border-radius: 30px;
     white-space: nowrap;
-    transition: 0.3s;
-    font-weight: 500;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
 }
-
 .btn-filtro.active, .btn-filtro:hover {
-    background: #004d26;
+    background: var(--green-primary);
     color: white;
-    border-color: #2ecc71;
+    border-color: var(--green-glow);
 }
 
-/* --- Layout da Vitrine --- */
-.container { 
-    max-width: 1200px; 
-    margin: 2rem auto; 
-    padding: 0 20px; 
-}
-
+.container { max-width: 1200px; margin: 2rem auto; padding: 0 20px; }
 .grid-livros {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
 }
 
-/* --- Card do Livro --- */
+/* ================================================================
+   4. CARDS DE LIVROS (ESTÉTICA PREMIUM)
+   ================================================================ */
 .livro-card {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 12px;
-    padding: 15px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 12px;
+    transition: var(--transition);
     display: flex;
     flex-direction: column;
-    height: 100%; /* Garante que todos os cards tenham a mesma altura na linha */
+    position: relative;
 }
-
 .livro-card:hover {
-    transform: translateY(-10px);
-    border-color: #004d26;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    transform: translateY(-8px);
+    border-color: var(--green-glow);
+    box-shadow: var(--shadow);
 }
 
 .capa-container {
     width: 100%;
-    height: 280px; 
-    overflow: hidden;  
+    aspect-ratio: 2/3; /* Proporção perfeita de capa de livro */
     border-radius: 10px;
-    background: #0d1117; 
-    margin-bottom: 15px;
+    overflow: hidden;
+    background: #000;
 }
-
 .capa-livro {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease; 
+    transition: transform 0.6s ease;
 }
+.livro-card:hover .capa-livro { transform: scale(1.08); }
 
-.livro-card:hover .capa-livro {
-    transform: scale(1.1); 
-}
-
-/* --- Informações do Livro --- */
-.livro-card h3 {
-    font-size: 1.1rem;
-    margin: 10px 0 5px 0;
-    color: #ffffff;
-    /* Limita o título a 2 linhas para não quebrar o layout */
+.livro-info h3 {
+    font-size: 1rem;
+    margin: 12px 0 5px;
+    color: #fff;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 2; /* Limita a 2 linhas */
     -webkit-box-orient: vertical;
     overflow: hidden;
+    height: 2.8rem;
 }
-
-.livro-card p {
-    font-size: 0.9rem;
-    color: #8b949e;
-    margin-bottom: 10px;
-}
-
-.preco { 
-    color: #2ecc71; 
-    font-weight: bold; 
-    font-size: 1.4rem; 
-    margin: 10px 0; 
+.autor-cat { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
+.preco {
+    display: block;
+    color: var(--green-glow);
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin: 10px 0;
 }
 
 .btn-adicionar {
-    background: #004d26;
+    background: var(--green-primary);
     color: white;
     border: none;
-    width: 100%;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
-    margin-top: auto; 
+    transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 }
-
-.btn-adicionar:hover { 
-    background: #006633; 
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
-}
+.btn-adicionar:hover { background: #006b35; }
+.btn-adicionar:active { transform: scale(0.95); }
 
 /* ================================================================
-   4. MODAL DO CARRINHO (ESTRUTURA E ITENS)
+   5. MODAL (CARRINHO)
    ================================================================ */
-
-/* Fundo escuro atrás do modal */
 .modal {
-    display: none; 
+    display: none;
     position: fixed;
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%;
-    background: rgba(0,0,0,0.85); 
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
     z-index: 2000;
-    backdrop-filter: blur(5px); /* Efeito de desfoque no fundo ao abrir o carrinho */
 }
-
-/* Caixa central do modal */
 .modal-content {
-    background: #161b22;
+    background: var(--bg-card);
+    width: 90%;
     max-width: 450px;
     margin: 50px auto;
+    border-radius: 20px;
     padding: 25px;
-    border-radius: 15px;
-    border: 1px solid #30363d; /* Borda mais sutil */
-    color: white;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
     position: relative;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
 }
-
-.modal-content h2 {
-    margin-top: 0;
-    border-bottom: 1px solid #30363d;
-    padding-bottom: 10px;
-    font-size: 1.5rem;
-}
-
-/* Estilização dos itens dentro do carrinho */
-.item-carrinho {
+.modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #30363d;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
 }
-
-.item-info h4 { margin: 0; font-size: 1rem; }
-.item-info p { margin: 0; color: #2ecc71; font-weight: bold; }
-
-.btn-remover {
-    background: transparent;
-    color: #e74c3c;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    transition: 0.3s;
-}
-
-.btn-remover:hover { transform: scale(1.2); }
-
-/* Área de lista com scroll */
 #itens-carrinho {
-    max-height: 350px; 
-    overflow-y: auto;  
+    flex: 1;
+    overflow-y: auto;
     margin: 15px 0;
 }
+.item-carrinho {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #21262d;
+}
+.btn-remover-item {
+    background: none; border: none; color: var(--red-alert); cursor: pointer;
+}
 
-/* Botões de Ação Final */
+.total-carrinho {
+    padding: 15px 0;
+    border-top: 2px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
 .btn-whatsapp {
     background: #25d366;
     color: white;
     border: none;
-    width: 100%;
-    padding: 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1rem;
-    margin-top: 10px;
-}
-
-.btn-fechar {
-    background: #30363d;
-    color: white;
-    border: none;
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-/* ================================================================
-   AJUSTES MOBILE (ESPECÍFICOS DO MODAL)
-   ================================================================ */
-@media (max-width: 768px) {
-    .modal-content {
-        width: 92%;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%); /* Centralização perfeita */
-        margin: 0;
-        max-height: 90vh;
-    }
-
-    #itens-carrinho {
-        max-height: 50vh;
-    }
-
-    .btn-whatsapp, .btn-fechar {
-        padding: 18px; /* Botões maiores para o polegar */
-    }
-}
-
-/* ================================================================
-   5. FINALIZAÇÃO DO PEDIDO E TOTAIS
-   ================================================================ */
-
-/* Seção do Total Geral (Rodapé do Modal) */
-.total-carrinho {
-    border-top: 2px solid #30363d;
-    padding-top: 20px;
-    margin-top: 10px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#total-valor {
-    color: #2ecc71; /* Verde esmeralda para o valor final */
-    font-size: 1.5rem;
-}
-
-/* Botão Principal: Finalizar via WhatsApp */
-.btn-whatsapp {
-    background-color: #25d366; 
-    color: white;
-    border: none;
     padding: 16px;
-    width: 100%;
-    border-radius: 10px;
-    font-size: 1.1rem;
-    font-weight: 800; /* Extra bold para chamar atenção */
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1rem;
     cursor: pointer;
-    margin-top: 20px;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    transition: var(--transition);
 }
+.btn-whatsapp:hover { background: #128c7e; transform: translateY(-2px); }
 
-.btn-whatsapp:hover {
-    background-color: #128c7e;
-    transform: translateY(-2px); /* Efeito de elevação */
-    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
-}
-
-.btn-whatsapp:active {
-    transform: translateY(0); /* Feedback de clique */
-}
-
-/* Botão Secundário: Continuar Comprando/Fechar */
-.btn-fechar {
-    background: #21262d; /* Cor levemente mais clara que o fundo para dar profundidade */
-    color: #c9d1d9;
-    border: 1px solid #30363d;
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    margin-top: 12px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: 0.2s;
-}
-
-.btn-fechar:hover {
-    background: #30363d;
-    color: #ffffff;
-}
-
-/* Utilitário: Texto de Carrinho Vazio */
-.carrinho-vazio {
-    text-align: center;
-    color: #8b949e;
-    padding: 30px 0;
-    font-style: italic;
+/* ================================================================
+   6. RESPONSIVIDADE FINAL
+   ================================================================ */
+@media (max-width: 768px) {
+    .navbar { padding: 10px 15px; gap: 10px; }
+    .nome-loja { display: none; } /* Esconde texto da loja no mobile para ganhar espaço */
+    .grid-livros { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .livro-card { padding: 8px; }
+    .livro-info h3 { font-size: 0.9rem; height: 2.5rem; }
+    .preco { font-size: 1.1rem; }
+    .btn-adicionar { padding: 8px; font-size: 0.85rem; }
+    .modal-content { margin: 20px auto; width: 95%; }
 }
