@@ -153,34 +153,61 @@ function renderizarItensCarrinho() {
 }
 
 /* ================================================================
-   5. FINALIZAÇÃO WHATSAPP
+   5. FINALIZAÇÃO E ENVIO (FORMATO RECIBO PREMIUM)
    ================================================================ */
-function enviarPedido() {
-    if (carrinho.length === 0) return alert("Adicione livros primeiro!");
+window.enviarPedido = () => {
+    if (carrinho.length === 0) {
+        alert("Ops! Seu carrinho está vazio.");
+        return;
+    }
+    
+    const data = new Date().toLocaleDateString('pt-BR');
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-    let texto = `📚 *NOVO PEDIDO - ${dadosVendedor.nome_loja.toUpperCase()}*\n\n`;
-    let total = 0;
-
-    // Agrupa repetidos para mensagem limpa
+    // 1. Agrupa itens repetidos e calcula subtotais
     const resumo = carrinho.reduce((acc, curr) => {
-        acc[curr.titulo] = (acc[curr.titulo] || 0) + 1;
+        if (!acc[curr.titulo]) {
+            acc[curr.titulo] = { qtd: 0, precoUnitario: curr.preco };
+        }
+        acc[curr.titulo].qtd += 1;
         return acc;
     }, {});
 
+    // 2. Monta o cabeçalho da mensagem
+    let texto = `📚 *NOVO PEDIDO - ${dadosVendedor.nome_loja.toUpperCase()}*\n`;
+    texto += `📅 _${data} às ${hora}_\n`;
+    texto += `------------------------------------------\n\n`;
+    
+    let subtotalGeral = 0;
+
+    // 3. Lista os itens formatados
     for (const titulo in resumo) {
-        const livro = carrinho.find(l => l.titulo === titulo);
-        const qtd = resumo[titulo];
-        texto += `📖 *${qtd}x* ${titulo} - R$ ${(livro.preco * qtd).toFixed(2)}\n`;
-        total += (livro.preco * qtd);
+        const item = resumo[titulo];
+        const subtotalItem = item.qtd * item.precoUnitario;
+        texto += `📖 *${item.qtd}x* ${titulo}\n`;
+        texto += `   R$ ${subtotalItem.toFixed(2).replace('.', ',')}\n\n`;
+        subtotalGeral += subtotalItem;
     }
+    
+    // 4. Cálculos Finais (Taxa fixa de entrega)
+    const taxaEntrega = 5.00; 
+    const totalFinal = subtotalGeral + taxaEntrega;
 
-    texto += `\n*TOTAL: R$ ${total.toFixed(2)}*\n`;
-    texto += `\n📍 *Favor informar endereço para entrega abaixo:*`;
+    // 5. Rodapé com Totais e Endereço
+    texto += `------------------------------------------\n`;
+    texto += `*Subtotal:* R$ ${subtotalGeral.toFixed(2).replace('.', ',')}\n`;
+    texto += `*Entrega:* R$ ${taxaEntrega.toFixed(2).replace('.', ',')}\n`;
+    texto += `💰 *TOTAL: R$ ${totalFinal.toFixed(2).replace('.', ',')}*\n`;
+    texto += `------------------------------------------\n\n`;
+    texto += `📍 *ENDEREÇO DE ENTREGA:*\n`;
+    texto += `(Favor digitar abaixo: Rua, Número, Bairro e Ponto de Referência)`;
 
-    const fone = dadosVendedor.whatsapp.replace(/\D/g, '');
-    window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(texto)}`, '_blank');
-}
-
+    // 6. Disparo para o WhatsApp do Vendedor
+    const numeroWhats = dadosVendedor.whatsapp.replace(/\D/g, ''); 
+    const link = `https://wa.me/55${numeroWhats}?text=${encodeURIComponent(texto)}`;
+    
+    window.open(link, '_blank');
+};
 /* ================================================================
    6. EVENTOS DE INTERFACE
    ================================================================ */
@@ -214,3 +241,4 @@ document.querySelectorAll('.btn-filtro').forEach(btn => {
         renderizarVitrine(filtrados);
     };
 });
+
