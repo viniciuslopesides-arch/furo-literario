@@ -189,25 +189,33 @@ window.enviarPedido = () => {
         subtotalGeral += subtotalItem;
     }
     
-    // 4. Cálculos Finais (Taxa fixa de entrega)
-    const taxaEntrega = 5.00; 
+    // 4. Cálculos Finais (Taxa Dinâmica do Firebase)
+    // Se o campo taxa_entrega não existir no banco, assume 0
+    const taxaEntrega = Number(dadosVendedor.taxa_entrega) || 0; 
     const totalFinal = subtotalGeral + taxaEntrega;
 
     // 5. Rodapé com Totais e Endereço
     texto += `------------------------------------------\n`;
     texto += `*Subtotal:* R$ ${subtotalGeral.toFixed(2).replace('.', ',')}\n`;
-    texto += `*Entrega:* R$ ${taxaEntrega.toFixed(2).replace('.', ',')}\n`;
+
+    // Lógica para mostrar "Grátis" ou o valor da taxa
+    const entregaTexto = taxaEntrega === 0 ? "Grátis" : `R$ ${taxaEntrega.toFixed(2).replace('.', ',')}`;
+    texto += `*Entrega:* ${entregaTexto}\n`;
+
     texto += `💰 *TOTAL: R$ ${totalFinal.toFixed(2).replace('.', ',')}*\n`;
     texto += `------------------------------------------\n\n`;
     texto += `📍 *ENDEREÇO DE ENTREGA:*\n`;
     texto += `(Favor digitar abaixo: Rua, Número, Bairro e Ponto de Referência)`;
 
-    // 6. Disparo para o WhatsApp do Vendedor
+    // 6. Disparo para o WhatsApp do Vendedor (Usando API oficial para emojis)
     const numeroWhats = dadosVendedor.whatsapp.replace(/\D/g, ''); 
-    const link = `https://wa.me/55${numeroWhats}?text=${encodeURIComponent(texto)}`;
+    
+    // Link formatado para garantir a conversão correta de emojis e espaços
+    const link = `https://api.whatsapp.com/send?phone=55${numeroWhats}&text=${encodeURIComponent(texto)}`;
     
     window.open(link, '_blank');
 };
+
 /* ================================================================
    6. EVENTOS DE INTERFACE
    ================================================================ */
