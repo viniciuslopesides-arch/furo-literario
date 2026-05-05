@@ -139,21 +139,23 @@ window.salvarPerfil = async () => {
 };
 
 /* ================================================================
-   5. OPERAÇÕES DE LIVROS (CRUD)
+   5. OPERAÇÕES DE LIVROS (CRUD) - CORRIGIDO
    ================================================================ */
 btnSalvar?.addEventListener('click', async () => {
     const idEdicao = btnSalvar.dataset.idEdicao;
-    const titulo = document.getElementById('tituloLivro').value.trim();
+    const tituloEl = document.getElementById('tituloLivro');
+    const titulo = tituloEl ? tituloEl.value.trim() : "";
+    
     if (!titulo) return alert("O título é obrigatório.");
 
     const dados = {
         titulo: titulo,
-        autor: document.getElementById('autorLivro').value.trim() || "Desconhecido",
-        categoria: document.getElementById('categoriaLivro').value || "Outros",
-        preco: Number(document.getElementById('precoLivro').value) || 0,
-        custo: Number(document.getElementById('custoLivro').value) || 0,
-        estoque: Number(document.getElementById('estoqueLivro').value) || 0,
-        capaURL: document.getElementById('capaURL').value.trim(),
+        autor: document.getElementById('autorLivro')?.value.trim() || "Desconhecido",
+        categoria: document.getElementById('categoriaLivro')?.value || "Outros",
+        preco: Number(document.getElementById('precoLivro')?.value) || 0,
+        custo: Number(document.getElementById('custoLivro')?.value) || 0,
+        estoque: Number(document.getElementById('estoqueLivro')?.value) || 0,
+        capaURL: document.getElementById('capaURL')?.value.trim() || "",
         ownerID: USUARIO_ID,
         ultimoUpdate: new Date()
     };
@@ -162,39 +164,39 @@ btnSalvar?.addEventListener('click', async () => {
     try {
         if (idEdicao) {
             await updateDoc(doc(db, "livros", idEdicao), dados);
+            alert("Livro atualizado! 🔄");
         } else {
-            dados.lucroFaturado = 0;
+            dados.lucroFaturado = 0; // Inicializa para o gráfico
             await addDoc(collection(db, "livros"), dados);
+            alert("Livro salvo no acervo! 📚");
         }
         limparFormulario();
-    } catch (e) { alert("Erro ao salvar dados do livro."); }
-    finally { btnSalvar.disabled = false; }
+    } catch (e) { 
+        console.error("Erro ao salvar:", e);
+        alert("Erro ao salvar dados do livro."); 
+    } finally { 
+        btnSalvar.disabled = false; 
+    }
 });
 
 function limparFormulario() {
-    document.querySelectorAll('.secao input, .secao select').forEach(i => i.value = "");
+    const ids = ['tituloLivro', 'autorLivro', 'precoLivro', 'estoqueLivro', 'custoLivro', 'capaURL'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+    });
     btnSalvar.innerText = "Salvar no Acervo";
     delete btnSalvar.dataset.idEdicao;
 }
 
-window.prepararEdicao = (id, t, a, p, e, c, cat, url) => {
-    document.getElementById('tituloLivro').value = t;
-    document.getElementById('autorLivro').value = a;
-    document.getElementById('precoLivro').value = p;
-    document.getElementById('estoqueLivro').value = e;
-    document.getElementById('custoLivro').value = c;
-    document.getElementById('categoriaLivro').value = cat;
-    document.getElementById('capaURL').value = url; 
-    
-    btnSalvar.dataset.idEdicao = id;
-    btnSalvar.innerText = "Atualizar Cadastro";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
 /* ================================================================
-   6. RENDERIZAÇÃO E VENDAS
+   6. RENDERIZAÇÃO E VENDAS - CORRIGIDO
    ================================================================ */
-function renderizarCardLivro(id, livro, estoque, lucroFaturado) {
+function renderizarCardLivro(id, livro) {
+    // Pegamos os valores de dentro do objeto livro que vem do Firebase
+    const estoque = Number(livro.estoque) || 0;
+    const lucroFaturado = Number(livro.lucroFaturado) || 0;
+    
     const statusClass = estoque <= 0 ? "status-zerado" : (estoque <= 5 ? "status-baixo" : "status-ok");
     const capaValida = (livro.capaURL && livro.capaURL.startsWith('http')) ? livro.capaURL : fallbackCapa;
 
@@ -203,7 +205,7 @@ function renderizarCardLivro(id, livro, estoque, lucroFaturado) {
             <img src="${capaValida}" class="capa-mini" onerror="this.src='${fallbackCapa}'">
             <div class="livro-info">
                 <strong>${livro.titulo}</strong>
-                <p>Qtd: ${estoque} | Lucro: R$ ${lucroFaturado.toFixed(2).replace('.', ',')}</p>
+                <p>Qtd: ${estoque} | Lucro: R$ ${lucroFaturado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
             </div>
             <div class="acoes-card">
                 <button class="btn-venda" onclick="window.registrarVenda('${id}')" style="grid-column: span 2; background: var(--accent-green); color: #000; font-weight: bold; margin-bottom: 8px;">VENDER (-1)</button>
@@ -213,29 +215,6 @@ function renderizarCardLivro(id, livro, estoque, lucroFaturado) {
         </div>`;
     document.getElementById('listaLivros').insertAdjacentHTML('beforeend', card);
 }
-
-window.registrarVenda = async (id) => {
-    try {
-        const docRef = doc(db, "livros", id);
-        const snap = await getDoc(docRef);
-        const dados = snap.data();
-        
-        if (dados.estoque <= 0) return alert("Produto esgotado!");
-
-        const margem = Number(dados.preco) - Number(dados.custo);
-        await updateDoc(docRef, {
-            estoque: increment(-1),
-            lucroFaturado: increment(margem)
-        });
-    } catch (e) { console.error("Erro na venda:", e); }
-};
-
-window.deletarLivro = async (id) => {
-    if (confirm("Remover este item do acervo?")) {
-        try { await deleteDoc(doc(db, "livros", id)); } 
-        catch (e) { console.error(e); }
-    }
-};
 
 /* ================================================================
    7. GRÁFICOS PREMIUM (CHART.JS)
