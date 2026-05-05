@@ -37,6 +37,7 @@ document.getElementById('btnLogout')?.addEventListener('click', () => signOut(au
    3. DASHBOARD EM TEMPO REAL (MÉTRICAS & GRÁFICOS)
    ================================================================ */
 function inicializarPainel() {
+    // Busca os livros vinculados ao ID do usuário logado
     const qLivros = query(collection(db, "livros"), where("ownerID", "==", USUARIO_ID));
     
     onSnapshot(qLivros, (snapshot) => {
@@ -50,27 +51,32 @@ function inicializarPainel() {
         snapshot.forEach((docSnap) => {
             const livro = docSnap.data();
             const id = docSnap.id;
+            
+            // Conversão garantida para números para evitar erros de cálculo
             const estoque = Number(livro.estoque) || 0;
             const lucroFaturado = Number(livro.lucroFaturado) || 0; 
 
             totalEstoque += estoque;
             faturamentoLucro += lucroFaturado; 
             
+            // Alimenta a lista que será enviada para o Chart.js
             dadosGrafico.push({ 
                 titulo: livro.titulo || "Sem título", 
                 estoque, 
                 lucro: lucroFaturado 
             });
 
-            renderizarCardLivro(id, livro, estoque, lucroFaturado);
+            // Chama a função global de renderização de cards (Certifique-se que ela aceite (id, livro))
+            renderizarCardLivro(id, livro);
         });
 
-        // Atualização dos Painéis Numéricos (KPIs)
+        // Atualização dos Painéis Numéricos (KPIs) com formatação brasileira
         const elEstoque = document.getElementById('total-estoque');
         const elLucro = document.getElementById('lucro-total');
         if (elEstoque) elEstoque.innerText = totalEstoque;
         if (elLucro) elLucro.innerText = `R$ ${faturamentoLucro.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         
+        // Dispara a atualização visual dos gráficos
         atualizarGraficosPremium(dadosGrafico);
     }, (error) => console.error("Erro na sincronização:", error));
 }
@@ -238,42 +244,65 @@ let chEstoque, chLucro;
 function atualizarGraficosPremium(dados) {
     const ctxE = document.getElementById('graficoEstoque');
     const ctxL = document.getElementById('graficoLucro');
-    if (!ctxE || !ctxL || dados.length === 0) return;
+    if (!ctxE || !ctxL) return;
 
+    // Destrói instâncias anteriores para evitar sobreposição e vazamento de memória
     if (chEstoque) chEstoque.destroy();
     if (chLucro) chLucro.destroy();
 
+    // Se não houver dados, os gráficos serão reiniciados vazios (melhor para o usuário)
     const labels = dados.map(d => d.titulo.length > 12 ? d.titulo.substring(0, 10) + '..' : d.titulo);
+    
     const commonScales = {
-        y: { grid: { color: '#333' }, ticks: { color: '#94a3b8' } },
-        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+        y: { 
+            beginAtZero: true, 
+            grid: { color: '#333' }, 
+            ticks: { color: '#94a3b8' } 
+        },
+        x: { 
+            grid: { display: false }, 
+            ticks: { color: '#94a3b8' } 
+        }
     };
 
+    // Configuração do Gráfico de Barras (Estoque)
     chEstoque = new Chart(ctxE, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{ label: 'Estoque', data: dados.map(d => d.estoque), backgroundColor: '#2ecc71', borderRadius: 5 }]
+            datasets: [{ 
+                label: 'Estoque', 
+                data: dados.map(d => d.estoque), 
+                backgroundColor: '#2ecc71', 
+                borderRadius: 5 
+            }]
         },
         options: { 
-            responsive: true, maintainAspectRatio: false, 
+            responsive: true, 
+            maintainAspectRatio: false, 
             plugins: { legend: { display: false } },
             scales: commonScales 
         }
     });
 
+    // Configuração do Gráfico de Linha (Lucro)
     chLucro = new Chart(ctxL, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{ 
-                label: 'Lucro', data: dados.map(d => d.lucro), 
-                borderColor: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)', 
-                fill: true, tension: 0.4, pointRadius: 4
+                label: 'Lucro', 
+                data: dados.map(d => d.lucro), 
+                borderColor: '#2ecc71', 
+                backgroundColor: 'rgba(46, 204, 113, 0.1)', 
+                fill: true, 
+                tension: 0.4, 
+                pointRadius: 4
             }]
         },
         options: { 
-            responsive: true, maintainAspectRatio: false, 
+            responsive: true, 
+            maintainAspectRatio: false, 
             plugins: { legend: { display: false } },
             scales: commonScales 
         }
