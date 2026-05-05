@@ -244,24 +244,27 @@ let chEstoque, chLucro;
 function atualizarGraficosPremium(dados) {
     const ctxE = document.getElementById('graficoEstoque');
     const ctxL = document.getElementById('graficoLucro');
+    
+    // Se os elementos não existirem no HTML, interrompe a execução
     if (!ctxE || !ctxL) return;
 
     // Destrói instâncias anteriores para evitar sobreposição e vazamento de memória
     if (chEstoque) chEstoque.destroy();
     if (chLucro) chLucro.destroy();
 
-    // Se não houver dados, os gráficos serão reiniciados vazios (melhor para o usuário)
+    // Tratamento de nomes longos nos labels para não quebrar o layout
     const labels = dados.map(d => d.titulo.length > 12 ? d.titulo.substring(0, 10) + '..' : d.titulo);
     
+    // Configuração de escalas compartilhada (Sincronizada com o tema Dark Elite)
     const commonScales = {
         y: { 
             beginAtZero: true, 
-            grid: { color: '#333' }, 
-            ticks: { color: '#94a3b8' } 
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }, // Linhas de grade sutis
+            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } 
         },
         x: { 
             grid: { display: false }, 
-            ticks: { color: '#94a3b8' } 
+            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } 
         }
     };
 
@@ -279,8 +282,11 @@ function atualizarGraficosPremium(dados) {
         },
         options: { 
             responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { legend: { display: false } },
+            maintainAspectRatio: false, // Fundamental para obedecer o container CSS
+            plugins: { 
+                legend: { display: false },
+                tooltip: { backgroundColor: '#161a1d', titleColor: '#2ecc71' } 
+            },
             scales: commonScales 
         }
     });
@@ -297,13 +303,17 @@ function atualizarGraficosPremium(dados) {
                 backgroundColor: 'rgba(46, 204, 113, 0.1)', 
                 fill: true, 
                 tension: 0.4, 
-                pointRadius: 4
+                pointRadius: 4,
+                pointBackgroundColor: '#2ecc71'
             }]
         },
         options: { 
             responsive: true, 
             maintainAspectRatio: false, 
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                tooltip: { backgroundColor: '#161a1d', titleColor: '#2ecc71' }
+            },
             scales: commonScales 
         }
     });
