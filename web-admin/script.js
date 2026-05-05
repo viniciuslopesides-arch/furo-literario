@@ -155,12 +155,16 @@ btnSalvar?.addEventListener('click', async () => {
             await updateDoc(doc(db, "livros", idEdicao), dados);
             alert("Livro atualizado! 🔄");
         } else {
+            // Inicializa lucroFaturado apenas em livros novos
             dados.lucroFaturado = 0;
             await addDoc(collection(db, "livros"), dados);
             alert("Livro salvo no acervo! 📚");
         }
         limparFormulario();
-    } catch (e) { alert("Erro ao salvar dados."); }
+    } catch (e) { 
+        console.error(e);
+        alert("Erro ao salvar dados."); 
+    }
     finally { btnSalvar.disabled = false; }
 });
 
@@ -197,22 +201,55 @@ function renderizarCardLivro(id, livro) {
                 <p>Qtd: ${estoque} | Lucro: R$ ${lucroFaturado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</p>
             </div>
             <div class="acoes-card">
-                <button class="btn-venda" onclick="registrarVenda('${id}')">VENDER (-1)</button>
+                <!-- Grupo de Venda Dinâmica -->
+                <div class="venda-input-group" style="grid-column: span 2;">
+                    <input type="number" id="qtd-venda-${id}" value="1" min="1" max="${estoque}" class="input-venda-rapida">
+                    <button class="btn-venda" onclick="window.registrarVenda('${id}')">
+                        VENDER
+                    </button>
+                </div>
+
+                <!-- Botões de Ação Arredondados -->
                 <button class="btn-edit" onclick="prepararEdicao('${id}', '${tituloSeguro}', '${autorSeguro}', ${livro.preco}, ${estoque}, ${livro.custo}, '${livro.categoria}', '${livro.capaURL}')">Editar</button>
                 <button class="btn-del" onclick="deletarLivro('${id}')">Excluir</button>
             </div>
         </div>`;
+
     document.getElementById('listaLivros').insertAdjacentHTML('beforeend', card);
 }
 
-// Tornando as funções globais para o HTML acessar
+// LÓGICA DE VENDA ATUALIZADA (Lê a quantidade do input)
 window.registrarVenda = async (id) => {
+    // 1. Captura o valor digitado no input específico deste card
+    const inputQtd = document.getElementById(`qtd-venda-${id}`);
+    const quantidadeParaVender = Number(inputQtd.value) || 1;
+
     const docRef = doc(db, "livros", id);
     const snap = await getDoc(docRef);
     const l = snap.data();
+
+    // 2. Validações de segurança
     if (l.estoque <= 0) return alert("Estoque esgotado!");
+    if (quantidadeParaVender > l.estoque) return alert(`Quantidade indisponível! Estoque atual: ${l.estoque}`);
+    if (quantidadeParaVender <= 0) return alert("Insira uma quantidade válida.");
+
+    // 3. Cálculo do lucro total (Lucro Unitário x Quantidade)
     const lucroUnitario = (Number(l.preco) || 0) - (Number(l.custo) || 0);
-    await updateDoc(docRef, { estoque: increment(-1), lucroFaturado: increment(lucroUnitario) });
+    const lucroTotalVenda = lucroUnitario * quantidadeParaVender;
+
+    try {
+        // 4. Atualiza o Firebase com os valores multiplicados
+        await updateDoc(docRef, { 
+            estoque: increment(-quantidadeParaVender), 
+            lucroFaturado: increment(lucroTotalVenda) 
+        });
+        
+        // Reseta o input para 1 após o sucesso
+        inputQtd.value = 1;
+    } catch (e) {
+        console.error("Erro ao vender:", e);
+        alert("Erro ao processar venda.");
+    }
 };
 
 window.deletarLivro = async (id) => {

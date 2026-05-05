@@ -205,6 +205,7 @@ input:focus { border-color: var(--accent-green); box-shadow: 0 0 0 4px var(--acc
     border: 1px solid var(--border-soft);
     padding: 15px;
     transition: var(--transition-smooth);
+    border-left: 5px solid transparent; /* Base para o status */
 }
 
 .livro-card:hover { border-color: var(--accent-green); transform: translateY(-5px); }
@@ -221,13 +222,32 @@ input:focus { border-color: var(--accent-green); box-shadow: 0 0 0 4px var(--acc
     margin-top: 15px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px; /* Aumentei um pouco o respiro entre botões */
+    gap: 10px;
 }
 
-/* ESTILO BASE PARA TODOS OS BOTÕES DO CARD */
+/* --- Grupo de Venda (Input + Botão) --- */
+.venda-input-group {
+    grid-column: span 2; /* O grupo todo ocupa a linha de cima */
+    display: flex;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.input-venda-rapida {
+    width: 70px;
+    background: #0f1215;
+    border: 1px solid var(--accent-green);
+    border-radius: 100px;
+    color: white;
+    text-align: center;
+    font-weight: 800;
+    padding: 10px;
+    outline: none;
+}
+
+/* ESTILO BASE DOS BOTÕES */
 .btn-venda, .btn-edit, .btn-del {
-    padding: 12px;
-    border-radius: 100px; /* Deixa redondo/pílula */
+    border-radius: 100px;
     font-weight: 800;
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -237,46 +257,27 @@ input:focus { border-color: var(--accent-green); box-shadow: 0 0 0 4px var(--acc
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 12px;
 }
 
-/* BOTÃO VENDER (VERDE) - OCUPA 2 COLUNAS */
 .btn-venda { 
-    grid-column: span 2; 
+    flex: 1; /* Ocupa o espaço ao lado do input */
     background: var(--accent-green); 
     color: #051a0b; 
 }
-.btn-venda:hover { 
-    background: var(--accent-hover); 
-    box-shadow: 0 4px 15px var(--accent-glow); 
-    transform: scale(1.02);
-}
 
-/* BOTÃO EDITAR (AMARELO) */
-.btn-edit { 
-    background: var(--warning); 
-    color: #000; 
-}
-.btn-edit:hover { 
-    background: #e1b100; /* Um tom de amarelo mais forte */
-    box-shadow: 0 4px 12px rgba(241, 196, 15, 0.2);
-    transform: scale(1.05);
-}
+.btn-edit { background: var(--warning); color: #000; }
+.btn-del { background: var(--danger); color: #fff; }
 
-/* BOTÃO EXCLUIR (VERMELHO) */
-.btn-del { 
-    background: var(--danger); 
-    color: #fff; 
-}
-.btn-del:hover { 
-    background: #ff2e40; 
-    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
-    transform: scale(1.05);
-}
+/* HOVERS */
+.btn-venda:hover { background: var(--accent-hover); box-shadow: 0 4px 15px var(--accent-glow); transform: scale(1.02); }
+.btn-edit:hover { background: #e1b100; transform: scale(1.05); }
+.btn-del:hover { background: #ff2e40; transform: scale(1.05); }
 
-/* Status de Borda */
-.status-ok { border-left: 5px solid var(--success); }
-.status-baixo { border-left: 5px solid var(--warning); }
-.status-zerado { border-left: 5px solid var(--danger); }
+/* Status de Borda (Cores de estoque) */
+.status-ok { border-left-color: var(--success); }
+.status-baixo { border-left-color: var(--warning); }
+.status-zerado { border-left-color: var(--danger); }
 
 /* ================================================================
    6. UTILITÁRIOS E RESPONSIVIDADE
