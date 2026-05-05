@@ -191,7 +191,7 @@ input:focus { border-color: var(--accent-green); box-shadow: 0 0 0 4px var(--acc
 }
 
 /* ================================================================
-   5. INVENTÁRIO: CARDS PREMIUM
+   5. INVENTÁRIO: CARDS PREMIUM (VERSÃO BOTÕES REDONDOS)
    ================================================================ */
 .data-grid {
     display: grid;
@@ -221,11 +221,57 @@ input:focus { border-color: var(--accent-green); box-shadow: 0 0 0 4px var(--acc
     margin-top: 15px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 10px; /* Aumentei um pouco o respiro entre botões */
 }
 
-.btn-venda { grid-column: span 2; background: var(--accent-green); color: #000; font-weight: bold; }
-.btn-venda:hover { background: var(--accent-hover); box-shadow: 0 4px 15px var(--accent-glow); }
+/* ESTILO BASE PARA TODOS OS BOTÕES DO CARD */
+.btn-venda, .btn-edit, .btn-del {
+    padding: 12px;
+    border-radius: 100px; /* Deixa redondo/pílula */
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* BOTÃO VENDER (VERDE) - OCUPA 2 COLUNAS */
+.btn-venda { 
+    grid-column: span 2; 
+    background: var(--accent-green); 
+    color: #051a0b; 
+}
+.btn-venda:hover { 
+    background: var(--accent-hover); 
+    box-shadow: 0 4px 15px var(--accent-glow); 
+    transform: scale(1.02);
+}
+
+/* BOTÃO EDITAR (AMARELO) */
+.btn-edit { 
+    background: var(--warning); 
+    color: #000; 
+}
+.btn-edit:hover { 
+    background: #e1b100; /* Um tom de amarelo mais forte */
+    box-shadow: 0 4px 12px rgba(241, 196, 15, 0.2);
+    transform: scale(1.05);
+}
+
+/* BOTÃO EXCLUIR (VERMELHO) */
+.btn-del { 
+    background: var(--danger); 
+    color: #fff; 
+}
+.btn-del:hover { 
+    background: #ff2e40; 
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+    transform: scale(1.05);
+}
 
 /* Status de Borda */
 .status-ok { border-left: 5px solid var(--success); }
